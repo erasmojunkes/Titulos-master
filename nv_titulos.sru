@@ -12,8 +12,8 @@ type variables
 nv_Funcoes inv_Funcoes
 uo_Progresso iuo_BarraProgresso
 String is_Arquivo1, is_Arquivo2
+String is_CaminhoArquivo1
 end variables
-
 forward prototypes
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[])
 public subroutine of_adicionar_divergencia (datastore ads_divergencias, string as_chavenfe, long al_idtitulo, string as_digitotitulo, string as_descricaodivergencia)
@@ -99,6 +99,7 @@ end function
 public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar, long al_idclifor);String ls_ChaveNFE, ls_DigitoTitulo
 Long ll_For, ll_Retrieve, ll_Titulo
 Decimal  lde_ValorArquivo, lde_SaldoTitulo
+Decimal lde_ValorArquivo1, lde_ValorArquivo2
 DataStore lds_ContasPagar, lds_Divergencias
 //Date ld_DataAtual, ld_DataVencimentoTitulo
 s_Parametros lst_Divergencias
@@ -123,8 +124,18 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 	End If
 	
 	ls_ChaveNFE = ads_Arquivo.GetItemString(ll_For, 'chavenfe')
-	is_Arquivo1 = ads_Arquivo.GetItemString(ll_For, 'arquivo1')
-	is_Arquivo2 = ads_Arquivo.GetItemString(ll_For, 'arquivo2')
+	If ads_Arquivo.GetItemDecimal(ll_For, 'ValorArquivo1') > 0 Then
+		is_Arquivo1 = 'T'
+	Else
+		is_Arquivo1 = 'F'
+	End If
+	
+	If ads_Arquivo.GetItemDecimal(ll_For, 'ValorArquivo2') > 0 Then
+		is_Arquivo2 = 'T'
+	Else
+		is_Arquivo2 = 'F'
+	End If
+
 	
 	ll_Retrieve = lds_ContasPagar.Retrieve(ls_ChaveNFE, al_idClifor)
 	
@@ -163,6 +174,9 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 //	End If
 	
 	lde_ValorArquivo = truncate(ads_Arquivo.GetItemDecimal(ll_For,'valoricms'),2)
+	lde_ValorArquivo1 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1'),2)
+	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
+	
 	lde_SaldoTitulo = lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo')
 	
 //	If lde_ValorArquivo > lde_SaldoTitulo Then
@@ -171,18 +185,15 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 //		Continue
 //	End If
 //	
-//	If lde_ValorArquivo < lde_SaldoTitulo Then
-//		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , &
-//										"T$$HEX1$$ed00$$ENDHEX$$tulo sera baixado parcialmente. Saldo do Titulo: " + String(lde_SaldoTitulo,"###,###,###.00") +"; Valor Arquivo: " + String(lde_ValorArquivo,"###,###,###.00") + "." )
-//	End If
+	If lde_ValorArquivo < lde_SaldoTitulo Then
+		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , &
+										"T$$HEX1$$ed00$$ENDHEX$$tulo sera baixado parcialmente. Saldo do Titulo: " + String(lde_SaldoTitulo,"###,###,###.00") +"; Valor Arquivo: " + String(lde_ValorArquivo,"###,###,###.00") + "." )
+	End If
 	
 	lds_ContasPagar.SetItem(1, 'valorpagamento', lde_ValorArquivo)
-	lds_ContasPagar.SetItem(1, 'arquivo1', is_Arquivo1)
-	lds_ContasPagar.SetItem(1, 'arquivo2', is_Arquivo2)
+	lds_ContasPagar.SetItem(1, 'ValorArquivo1', lde_ValorArquivo1)
+	lds_ContasPagar.SetItem(1, 'ValorArquivo2', lde_ValorArquivo2)
 	
-//	If lde_ValorArquivo = lde_SaldoTitulo Then
-//		lds_ContasPagar.SetItem(1, 'flagbaixada', 'T')
-//	End If
 	
 	If lds_ContasPagar.RowsMove( 1, lds_ContasPagar.RowCount(), Primary!, adw_ContasPagar, 1, Primary!) < 0 Then
 		MessageBox('Problemas ao manipular o T$$HEX1$$ed00$$ENDHEX$$tulo', 'T$$HEX1$$ed00$$ENDHEX$$tulo n$$HEX1$$e300$$ENDHEX$$o pode ser carregada para o Sistema.')
@@ -229,13 +240,29 @@ s_Parametros lst_Envio
 lst_Envio.String[1]  = 'Selecione arquivo da tabela IBPT para importar'
 lst_Envio.string[2] = "Microsoft Excel (*.CSV),*.CSV,"
 
-ls_CaminhoArquivo = inv_Funcoes.of_abrir_arquivo( lst_Envio)
+Do
 
+	ls_CaminhoArquivo = inv_Funcoes.of_abrir_arquivo( lst_Envio)
+	
+	
+	If ls_CaminhoArquivo = '' Then
+		MessageBox('Importa$$HEX2$$e700e300$$ENDHEX$$o de Arquivo', 'Problemas ao importar o arquivo, verifique a formata$$HEX2$$e700e300$$ENDHEX$$o ou endere$$HEX1$$e700$$ENDHEX$$o e tente novamente.')
+		Return -1 
+	End If 
+	
+	If ai_numarquivo = 1 Then
+		is_CaminhoArquivo1 = ls_CaminhoArquivo
+	
+	ElseIf is_CaminhoArquivo1 = ls_CaminhoArquivo Then
+		
+		If MessageBox('Arquivo duplicado', 'O mesmo arquivo foi selecionado mais de uma vez. Deseja importar um novo arquivo?',  Question!, YesNo!) = 1 Then
+			Continue// Se sim permite informar um arquivo diferente
+		Else
+			Return -1 //Se n$$HEX1$$e300$$ENDHEX$$o cancela a importa$$HEX2$$e700e300$$ENDHEX$$o
+		End If
+	End If
 
-If ls_CaminhoArquivo = '' Then
-	MessageBox('Importa$$HEX2$$e700e300$$ENDHEX$$o de Arquivo', 'Problemas ao importar o arquivo, verifique a formata$$HEX2$$e700e300$$ENDHEX$$o ou endere$$HEX1$$e700$$ENDHEX$$o e tente novamente.')
-	Return -1 
-End If 
+Loop While ai_numarquivo <> 1 And ls_CaminhoArquivo = is_CaminhoArquivo1// Fica em loop enquanto ambos os arquivos estiverem no mesmo endereco
 
 ll_Arquivo = FileOpen(ls_CaminhoArquivo, LineMode!, Read!)
 
@@ -281,7 +308,7 @@ Do While (ll_Bytes > 0)
 				If ads_Arquivo.RowCount() > 0 Then
 					ll_Linha = ads_Arquivo.Find("chavenfe = '" + ls_ChaveNFE + "'", 1, ads_Arquivo.RowCount( ))
 					If ll_Linha > 0 Then
-						ads_Arquivo.SetItem(ll_Linha, "Arquivo2", 'T')
+						ads_Arquivo.SetItem(ll_Linha, "ValorArquivo2", Dec(ls_Colunas[9]))
 						lde_ValorICMS += inv_Funcoes.of_null( ads_Arquivo.GetItemDecimal(ll_Linha, 'valoricms'), 0)
 					End If
 				End If
@@ -294,9 +321,9 @@ Do While (ll_Bytes > 0)
 				ll_Linha = ads_Arquivo.InsertRow(0)
 				
 				If ai_NumArquivo = 2 Then
-					ads_Arquivo.SetItem(ll_Linha, "Arquivo2", 'T')
+					ads_Arquivo.SetItem(ll_Linha, "ValorArquivo2", Dec(ls_Colunas[9]))
 				Else	
-					ads_Arquivo.SetItem(ll_Linha, "Arquivo1", 'T')	
+					ads_Arquivo.SetItem(ll_Linha, "ValorArquivo1", Dec(ls_Colunas[9]))	
 				End If
 				ads_Arquivo.SetItem(ll_Linha, "chavenfe", ls_ChaveNFE)
 				

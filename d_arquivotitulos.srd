@@ -6,17 +6,21 @@ summary(height=0 color="536870912" )
 footer(height=0 color="536870912" )
 detail(height=0 color="536870912" )
 table(column=(type=char(44) updatewhereclause=yes name=chavenfe dbname="CHAVENFE" )
- column=(type=decimal(6) updatewhereclause=yes name=valoricms dbname="VALORICMS" )
- column=(type=char(1) updatewhereclause=yes name=arquivo1 dbname="ARQUIVO1" initial="F" )
- column=(type=char(1) updatewhereclause=yes name=arquivo2 dbname="ARQUIVO2" initial="F" )
+ column=(type=decimal(6) updatewhereclause=yes name=valoricms dbname="VALORICMS" initial="0" )
+ column=(type=decimal(6) updatewhereclause=yes name=valorarquivo1 dbname="VALORARQUIVO1" initial="0" )
+ column=(type=decimal(6) updatewhereclause=yes name=valorarquivo2 dbname="VALORARQUIVO2" initial="0" )
  retrieve="SELECT 
 	CAST('' AS VARCHAR(44) ) AS CHAVENFE,
 	CAST(0 AS DECIMAL(16,6)) AS VALORICMS,
-	CAST('F' AS CHAR) AS ARQUIVO1,
-	CAST('F' AS CHAR) AS ARQUIVO2
+	CAST(0 AS DECIMAL(16,6)) AS VALORARQUIVO1,
+	CAST(0 AS DECIMAL(16,6)) AS VALORARQUIVO2
 FROM 
 	DUMMY
 " )
+column(band=detail id=3 alignment="0" tabsequence=0 border="0" color="33554432" x="9" y="0" height="76" width="2519" html.valueishtml="0"  name=valorarquivo1 visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
+text(band=header alignment="0" text="Valorarquivo1" border="0" color="33554432" x="5" y="4" height="76" width="2523" html.valueishtml="0"  name=valorarquivo1_t visible="1"  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
+column(band=detail id=4 alignment="0" tabsequence=0 border="0" color="33554432" x="2542" y="0" height="76" width="2519" html.valueishtml="0"  name=valorarquivo2 visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
+text(band=header alignment="0" text="Valorarquivo2" border="0" color="33554432" x="2537" y="4" height="76" width="2523" html.valueishtml="0"  name=valorarquivo2_t visible="1"  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
 htmltable(border="1" )
 htmlgen(clientevents="1" clientvalidation="1" clientcomputedfields="1" clientformatting="0" clientscriptable="0" generatejavascript="1" encodeselflinkargs="1" netscapelayers="0" pagingmethod=0 generatedddwframes="1" )
 xhtmlgen() cssgen(sessionspecific="0" )

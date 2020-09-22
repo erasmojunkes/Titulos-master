@@ -21,6 +21,7 @@ public function integer of_update (datawindow arg[])
 public function integer of_salvar_importado (datawindow adw_contas_receber)
 public function integer of_salvar_relatorio (datawindow adw_relatorio)
 public function integer of_verifica_forma_pagamento (long al_formapagamento)
+public function any of_if (boolean ab_condicao, ref any aa_verdadeiro, ref any aa_falso)
 end prototypes
 
 public function integer of_verifica_cliente (long al_idclifor);Long ll_Count
@@ -392,6 +393,13 @@ Else
 	Return -1
 End If
 
+end function
+
+public function any of_if (boolean ab_condicao, ref any aa_verdadeiro, ref any aa_falso);If ab_Condicao Then
+	Return aa_verdadeiro
+Else
+	Return aa_falso
+End If	
 end function
 
 on nv_funcoes.create
