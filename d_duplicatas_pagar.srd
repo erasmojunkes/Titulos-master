@@ -1,0 +1,96 @@
+HA$PBExportHeader$d_duplicatas_pagar.srd
+$PBExportComments$Lan$$HEX1$$e700$$ENDHEX$$amento das duplicata a pagar
+release 10.5;
+datawindow(units=0 timer_interval=0 color=79741120 processing=1 HTMLDW=no print.printername="" print.documentname="" print.orientation = 0 print.margin.left = 110 print.margin.right = 110 print.margin.top = 96 print.margin.bottom = 96 print.paper.source = 0 print.paper.size = 0 print.canusedefaultprinter=yes print.prompt=no print.buttons=no print.preview.buttons=no print.cliptext=no print.overrideprintjob=no print.collate=yes print.preview.outline=yes hidegrayline=no grid.lines=0 )
+header(height=68 color="79741120" )
+summary(height=0 color="536870912" )
+footer(height=68 color="536870912" )
+detail(height=68 color="1090519039" )
+table(column=(type=long update=yes updatewhereclause=yes key=yes name=idempresa dbname="IDEMPRESA" )
+ column=(type=long update=yes updatewhereclause=yes key=yes name=idclifor dbname="IDCLIFOR" )
+ column=(type=long update=yes updatewhereclause=yes name=idplanilha dbname="IDPLANILHA" )
+ column=(type=char(3) update=yes updatewhereclause=yes key=yes name=digitotitulo dbname="DIGITOTITULO" )
+ column=(type=char(3) update=yes updatewhereclause=yes key=yes name=serienota dbname="SERIENOTA" )
+ column=(type=long update=yes updatewhereclause=yes name=idpagamento dbname="IDPAGAMENTO" )
+ column=(type=char(6) update=yes updatewhereclause=yes name=origemmovimento dbname="ORIGEMMOVIMENTO" )
+ column=(type=decimal(2) update=yes updatewhereclause=yes name=valtitulo dbname="VALTITULO" validation="dec(gettext())>=0" validationmsg="'Valor inv$$HEX1$$e100$$ENDHEX$$lido!'" )
+ column=(type=long update=yes updatewhereclause=yes name=idusuario dbname="IDUSUARIO" )
+ column=(type=date update=yes updatewhereclause=yes name=dtmovimento dbname="DTMOVIMENTO" )
+ column=(type=date update=yes updatewhereclause=yes name=contas_pagar_dtemissao dbname="DTEMISSAO" )
+ column=(type=long update=yes updatewhereclause=yes key=yes name=idtitulo dbname="IDTITULO" )
+ column=(type=date update=yes updatewhereclause=yes name=dtvencimento dbname="DTVENCIMENTO" )
+ column=(type=char(600) update=yes updatewhereclause=yes name=obstitulo dbname="OBSTITULO" )
+ column=(type=decimal(4) update=yes updatewhereclause=yes name=contas_pagar_perjurosmora dbname="PERJUROSMORA" )
+ column=(type=long update=yes updatewhereclause=yes name=idctacontabil dbname="IDCTACONTABIL" )
+ column=(type=char(1) update=yes updatewhereclause=yes name=flagagrupado dbname="FLAGAGRUPADO" )
+ column=(type=long update=yes updatewhereclause=yes name=idctacontabilcontrapartida dbname="IDCTACONTABILCONTRAPARTIDA" )
+ column=(type=char(60) update=yes updatewhereclause=yes name=contas_pagar_codigobarras dbname="CODIGOBARRAS" )
+ column=(type=char(60) update=yes updatewhereclause=yes name=contas_pagar_codigoboleto dbname="CODIGOBOLETO" )
+ column=(type=char(1) update=yes updatewhereclause=yes name=contas_pagar_flagcartaoproprio dbname="FLAGCARTAOPROPRIO" )
+ column=(type=char(20) update=yes updatewhereclause=yes name=nrodocatribuido dbname="NRODOCATRIBUIDO" )
+ column=(type=date update=yes updatewhereclause=yes name=dtagendamento dbname="DTAGENDAMENTO" )
+ retrieve="SELECT
+	CONTAS_PAGAR.IDEMPRESA,
+	CONTAS_PAGAR.IDCLIFOR,
+	CONTAS_PAGAR.IDPLANILHA,
+	CONTAS_PAGAR.DIGITOTITULO,
+	CONTAS_PAGAR.SERIENOTA,
+	CONTAS_PAGAR.IDPAGAMENTO,
+	CONTAS_PAGAR.ORIGEMMOVIMENTO,
+	CONTAS_PAGAR.VALTITULO,
+	CONTAS_PAGAR.IDUSUARIO,
+	CONTAS_PAGAR.DTMOVIMENTO,
+	CONTAS_PAGAR.DTEMISSAO,
+	CONTAS_PAGAR.IDTITULO,
+	CONTAS_PAGAR.DTVENCIMENTO,
+	CONTAS_PAGAR.OBSTITULO,
+	CONTAS_PAGAR.PERJUROSMORA,
+	CONTAS_PAGAR.IDCTACONTABIL,
+	CONTAS_PAGAR.FLAGAGRUPADO,
+	CONTAS_PAGAR.IDCTACONTABILCONTRAPARTIDA,
+	CONTAS_PAGAR.CODIGOBARRAS,
+	CONTAS_PAGAR.CODIGOBOLETO,
+	CONTAS_PAGAR.FLAGCARTAOPROPRIO,
+	CONTAS_PAGAR.NRODOCATRIBUIDO,
+	CONTAS_PAGAR.DTAGENDAMENTO
+FROM
+	CONTAS_PAGAR
+	JOIN CLIENTE_FORNECEDOR  ON (CLIENTE_FORNECEDOR.IDCLIFOR = CONTAS_PAGAR.IDCLIFOR)
+WHERE
+	( CONTAS_PAGAR.IDEMPRESA = :RA_IDEMPRESA )
+	AND ( CONTAS_PAGAR.IDCLIFOR = :RA_IDCLIFOR )
+	AND ( CONTAS_PAGAR.IDTITULO = :RA_IDTITULO )
+	AND ( CONTAS_PAGAR.SERIENOTA = :RA_SERIE
+	OR (:RA_SERIE IN('EFE', 'PRE')
+	AND CONTAS_PAGAR.SERIENOTA IN('EFE', 'PRE')))" update="DBA.CONTAS_PAGAR" updatewhere=0 updatekeyinplace=yes arguments=(("ra_idempresa", number),("ra_idclifor", number),("ra_idtitulo", number),("ra_serie", string))  sort="digitotitulo A " )
+text(band=header alignment="2" text="D$$HEX1$$ed00$$ENDHEX$$gito" border="0" color="0" x="9" y="8" height="56" width="160" html.valueishtml="0"  name=digitotitulo_t visible="1"  font.face="Arial" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="536870912" )
+text(band=header alignment="2" text="ForPag" border="0" color="0" x="178" y="8" height="56" width="187" html.valueishtml="0"  name=idpagamento_t visible="1"  font.face="Arial" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="536870912" )
+text(band=header alignment="2" text="Vencimento" border="0" color="0" x="379" y="8" height="56" width="302" html.valueishtml="0"  name=dtvencimento_t visible="1"  font.face="Arial" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="536870912" )
+text(band=header alignment="2" text="Valor" border="0" color="0" x="1074" y="8" height="56" width="361" html.valueishtml="0"  name=valtitulo_t visible="1"  font.face="Arial" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="536870912" )
+text(band=header alignment="0" text="Observa$$HEX2$$e700e300$$ENDHEX$$o" border="0" color="0" x="4526" y="8" height="56" width="1664" html.valueishtml="0"  name=obstitulo_t visible="1"  font.face="Arial" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="536870912" )
+text(band=header alignment="2" text="C$$HEX1$$f300$$ENDHEX$$digo de Barras" border="0" color="0" x="1454" y="8" height="56" width="1531" html.valueishtml="0"  name=contas_pagar_codigobarras_t visible="1"  font.face="Tahoma" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="553648127" )
+text(band=header alignment="2" text="C$$HEX1$$f300$$ENDHEX$$digo Digit$$HEX1$$e100$$ENDHEX$$vel" border="0" color="0" x="2994" y="8" height="56" width="1522" html.valueishtml="0"  name=contas_pagar_codigoboleto_t visible="1"  font.face="Tahoma" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="553648127" )
+text(band=header alignment="0" text="Nrodocatribuido" border="0" color="0" x="6203" y="4" height="76" width="453" html.valueishtml="0"  name=nrodocatribuido_t visible="0"  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="16777215" )
+text(band=header alignment="2" text="Agendamento" border="0" color="0" x="695" y="4" height="56" width="366" html.valueishtml="0"  name=dtagendamento_t visible="1"  font.face="Arial" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="553648127" )
+column(band=detail id=8 alignment="1" tabsequence=40 border="0" color="0" x="1074" y="0" height="64" width="361" format="###,###,###.00" html.valueishtml="0" protect="0~tif(contas_pagar_saldos_view_sumvalpagamen>0,1,0)"  name=valtitulo visible="1" edit.name="ValorMedio" editmask.mask="###,###,###.00" editmask.focusrectangle=no  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1090519039" )
+column(band=detail id=4 alignment="2" tabsequence=32766 border="0" color="0" x="9" y="0" height="64" width="160" format="[general]" html.valueishtml="0"  name=digitotitulo visible="1" edit.limit=3 edit.case=any edit.focusrectangle=no edit.autoselect=yes edit.autohscroll=yes  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="553648127" )
+column(band=detail id=6 alignment="1" tabsequence=10 border="0" color="0" x="178" y="0" height="64" width="187" format="[general]" html.valueishtml="0" protect="0~tif(contas_pagar_saldos_view_sumvalpagamen>=valtitulo,1,0)"  name=idpagamento visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=yes edit.autohscroll=yes  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1090519039" )
+column(band=detail id=14 alignment="0" tabsequence=70 border="0" color="0" x="4526" y="0" height="64" width="1664" format="[general]" html.valueishtml="0"  name=obstitulo visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=yes  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1090519039" )
+column(band=detail id=19 alignment="0" tabsequence=50 border="0" color="0" x="1454" y="0" height="64" width="1531" format="[general]" html.valueishtml="0"  name=contas_pagar_codigobarras visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="553648127" )
+column(band=detail id=20 alignment="0" tabsequence=60 border="0" color="0" x="2994" y="0" height="64" width="1522" format="[general]" html.valueishtml="0"  name=contas_pagar_codigoboleto visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="553648127" )
+column(band=detail id=22 alignment="0" tabsequence=80 border="0" color="0" x="6203" y="0" height="56" width="453" format="[general]" html.valueishtml="0"  name=nrodocatribuido visible="0" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1090519039" )
+column(band=detail id=13 alignment="2" tabsequence=20 border="0" color="0" x="384" y="0" height="64" width="297" format="[general]" html.valueishtml="0" protect="0~tif(contas_pagar_saldos_view_sumvalpagamen>=valtitulo Or  contas_pagar_flagcartaoproprio = 'T',1,0)"  name=dtvencimento visible="1" editmask.mask="dd/mm/yyyy" editmask.focusrectangle=no  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1090519039" )
+column(band=detail id=23 alignment="2" tabsequence=30 border="0" color="0" x="699" y="0" height="64" width="361" format="[general]" html.valueishtml="0"  name=dtagendamento visible="1" editmask.mask="dd/mm/yyyy" editmask.focusrectangle=no  font.face="Arial" font.height="-8" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1090519039" )
+text(band=footer alignment="1" text="Total" border="0" color="0" x="379" y="4" height="56" width="302" html.valueishtml="0"  name=t_5 visible="1"  font.face="Arial" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="553648127" )
+compute(band=footer alignment="1" expression="sum(valtitulo for all)"border="0" color="0" x="1074" y="4" height="64" width="361" format="###,###,##0.00" html.valueishtml="0"  name=compute_valor_total visible="1"  font.face="Arial" font.height="-8" font.weight="700"  font.family="2" font.pitch="2" font.charset="0" background.mode="1" background.color="553648127" )
+htmltable(border="1" )
+htmlgen(clientevents="1" clientvalidation="1" clientcomputedfields="1" clientformatting="0" clientscriptable="0" generatejavascript="1" encodeselflinkargs="1" netscapelayers="0" pagingmethod=0 generatedddwframes="1" )
+xhtmlgen() cssgen(sessionspecific="0" )
+xmlgen(inline="0" )
+xsltgen()
+jsgen()
+export.xml(headgroups="1" includewhitespace="0" metadatatype=0 savemetadata=0 )
+import.xml()
+export.pdf(method=0 distill.custompostscript="0" xslfop.print="0" )
+export.xhtml()
+ 
