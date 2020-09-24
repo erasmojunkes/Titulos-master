@@ -13,14 +13,17 @@ nv_Funcoes inv_Funcoes
 uo_Progresso iuo_BarraProgresso
 String is_Arquivo1, is_Arquivo2
 String is_CaminhoArquivo1
+Long il_Forma, il_idClifor
+
+Datawindow idw_contabil_avulso, idw_contas_pagar_avulso
 end variables
 forward prototypes
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[])
 public subroutine of_adicionar_divergencia (datastore ads_divergencias, string as_chavenfe, long al_idtitulo, string as_digitotitulo, string as_descricaodivergencia)
-public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor)
-public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar, long al_idclifor)
-public function integer of_processa_titulo (datastore ads_arquivo, datawindow adw_contaspagar, long al_idclifor)
 public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arquivo)
+public function integer of_processa_titulo (datastore ads_arquivo, datawindow adw_contaspagar)
+public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar)
+public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso)
 end prototypes
 
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[]);String ls_Value
@@ -69,167 +72,6 @@ ads_divergencias.SetItem(ll_NovaLinha, 'digitotiulo', as_DigitoTitulo)
 ads_divergencias.SetItem(ll_NovaLinha, 'descricaodivergencia', as_DescricaoDivergencia)
 
 end subroutine
-
-public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor);
-Datastore lds_Arquivo
-
-lds_Arquivo = Create DataStore
-
-lds_Arquivo.DataObject = 'd_arquivotitulos'
-lds_Arquivo.SetTransObject(SQLCA)
-
-If of_Ler_arquivo(1, lds_Arquivo) < 0 Then
-	Return -1
-Else
-	If MessageBox('Importar arquivo', 'Deseja Importar o segundo arquivo?',  Question!, YesNo!) = 1 Then
-		If of_Ler_arquivo(2, lds_Arquivo) < 0 Then
-			Return -1
-		End If
-	End If
-End If
-
-If of_processa_titulo(lds_Arquivo, adw_contas_pagar, al_idCliFor) < 0 Then 
-	Return -1
-End If
-
-
-Return 1
-end function
-
-public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar, long al_idclifor);String ls_ChaveNFE, ls_DigitoTitulo
-Long ll_For, ll_Retrieve, ll_Titulo
-Decimal  lde_ValorArquivo, lde_SaldoTitulo
-Decimal lde_ValorArquivo1, lde_ValorArquivo2
-DataStore lds_ContasPagar, lds_Divergencias
-//Date ld_DataAtual, ld_DataVencimentoTitulo
-s_Parametros lst_Divergencias
-
-lds_Divergencias = Create DataStore
-lds_ContasPagar = Create DataStore
-
-lds_ContasPagar.DataObject = 'd_contas_pagar'
-lds_ContasPagar.SetTransObject(SQLCA)
-
-lds_Divergencias.DataObject = 'd_divergencias'
-lds_Divergencias.SetTransObject(SQLCA)
-
-//ld_DataAtual = Date(inv_Funcoes.of_get_data_atual( ))
-
-For ll_For = 1 To ads_Arquivo.RowCount()
-	
-	Yield()//Atualizar Visualmente
-	
-	If IsValid(iuo_BarraProgresso) Then
-		iuo_BarraProgresso.of_Atualizar( ll_For, ads_Arquivo.RowCount())
-	End If
-	
-	ls_ChaveNFE = ads_Arquivo.GetItemString(ll_For, 'chavenfe')
-	If ads_Arquivo.GetItemDecimal(ll_For, 'ValorArquivo1') > 0 Then
-		is_Arquivo1 = 'T'
-	Else
-		is_Arquivo1 = 'F'
-	End If
-	
-	If ads_Arquivo.GetItemDecimal(ll_For, 'ValorArquivo2') > 0 Then
-		is_Arquivo2 = 'T'
-	Else
-		is_Arquivo2 = 'F'
-	End If
-
-	
-	ll_Retrieve = lds_ContasPagar.Retrieve(ls_ChaveNFE, al_idClifor)
-	
-
-	If ll_Retrieve =  0 Then
-		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,0,'', 'N$$HEX1$$e300$$ENDHEX$$o foi poss$$HEX1$$ed00$$ENDHEX$$vel encontrar nenhum t$$HEX1$$ed00$$ENDHEX$$tulo relacionado a nota.')
-		Continue
-	End If
-	
-	If ll_Retrieve < 0 Then
-		MessageBox('Buscando T$$HEX1$$ed00$$ENDHEX$$tulos', 'Problemas ao carregar os t$$HEX1$$ed00$$ENDHEX$$tulos relacionados.')
-		Return -1
-	End If
-	
-	If ll_Retrieve > 1 Then
-		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,0,'', 'Mais de uma parcela para o t$$HEX1$$ed00$$ENDHEX$$tulo, n$$HEX1$$e300$$ENDHEX$$o foi possivel importar.')
-		Continue
-	End If
-	
-	ll_Titulo = lds_ContasPagar.GetItemDecimal(1, 'idtitulo')
-	ls_DigitoTitulo = lds_ContasPagar.GetItemString(1, 'digitotitulo')
-	
-	//Se encontrou um titulo bloquado, ele cancela a baixa do registro
-	If inv_Funcoes.of_null(lds_ContasPagar.GetItemString(1,'flagtitulobloqueado'),'F') = 'T' Then 
-		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , 'O t$$HEX1$$ed00$$ENDHEX$$tulo se encontra bloquado e n$$HEX1$$e300$$ENDHEX$$o pode ser baixado.')
-		Continue
-	End If
-	
-	
-//	ld_DataVencimentoTitulo = lds_ContasPagar.GetItemDate(1,'dtvencimento')
-//
-//	//Se encontrou um titulo vencido, ele cancela a baixa do registro
-//	If ld_DataVencimentoTitulo < ld_DataAtual Then 
-//		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , 'O t$$HEX1$$ed00$$ENDHEX$$tulo se encontra vencido e n$$HEX1$$e300$$ENDHEX$$o pode ser baixado.')
-//		Continue
-//	End If
-	
-	lde_ValorArquivo = truncate(ads_Arquivo.GetItemDecimal(ll_For,'valoricms'),2)
-	lde_ValorArquivo1 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1'),2)
-	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
-	
-	lde_SaldoTitulo = lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo')
-	
-//	If lde_ValorArquivo > lde_SaldoTitulo Then
-//		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , &
-//										"T$$HEX1$$ed00$$ENDHEX$$tulo com saldo("+ String(lde_SaldoTitulo,"###,###,###.00") + ") menor que o valor a ser baixado pelo arquivo("+ String(lde_ValorArquivo,"###,###,###.00") + ").")
-//		Continue
-//	End If
-//	
-	If lde_ValorArquivo < lde_SaldoTitulo Then
-		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , &
-										"T$$HEX1$$ed00$$ENDHEX$$tulo sera baixado parcialmente. Saldo do Titulo: " + String(lde_SaldoTitulo,"###,###,###.00") +"; Valor Arquivo: " + String(lde_ValorArquivo,"###,###,###.00") + "." )
-	End If
-	
-	lds_ContasPagar.SetItem(1, 'valorpagamento', lde_ValorArquivo)
-	lds_ContasPagar.SetItem(1, 'ValorArquivo1', lde_ValorArquivo1)
-	lds_ContasPagar.SetItem(1, 'ValorArquivo2', lde_ValorArquivo2)
-	
-	
-	If lds_ContasPagar.RowsMove( 1, lds_ContasPagar.RowCount(), Primary!, adw_ContasPagar, 1, Primary!) < 0 Then
-		MessageBox('Problemas ao manipular o T$$HEX1$$ed00$$ENDHEX$$tulo', 'T$$HEX1$$ed00$$ENDHEX$$tulo n$$HEX1$$e300$$ENDHEX$$o pode ser carregada para o Sistema.')
-		Return -1
-	End If
-	
-Next
-
-If lds_Divergencias.RowCount() > 0 Then 
-	lst_Divergencias.PowerObj[1] = lds_Divergencias
-	OpenWithParm(w_divergencias, lst_Divergencias)
-
-	lst_Divergencias = Message.PowerObjectParm
-	
-	If lst_Divergencias.Long[1] < 0 Then
-		Return -1
-	End If
-End If
-
-Return 1
-end function
-
-public function integer of_processa_titulo (datastore ads_arquivo, datawindow adw_contaspagar, long al_idclifor);Long ll_Retorno
-
-If ads_Arquivo.RowCount() > 0 Then
-	w_Inicial.OpenUserObject(iuo_BarraProgresso)
-	iuo_BarraProgresso.of_definir_valores(0, ads_Arquivo.RowCount() , 1,'Relacionando T$$HEX1$$ed00$$ENDHEX$$tulos com o Arquivo. Aguarde...') 
-End If
-
-ll_Retorno = of_processar_titulos( ads_arquivo, adw_contaspagar, al_idCliFor)
-
-//Assim consegue fechar a barra de progresso, idependente do retorno da tela
-w_Inicial.CloseUserObject(iuo_BarraProgresso)
-
-Return ll_Retorno
-end function
 
 public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arquivo);String ls_CaminhoArquivo, ls_Linha, ls_Colunas[], ls_ChaveAntiga, ls_ChaveNFE
 Long ll_Bytes, ll_Arquivo, ll_Linha, ll_For
@@ -340,6 +182,175 @@ Loop
 
 FileClose(ll_Arquivo)
 
+end function
+
+public function integer of_processa_titulo (datastore ads_arquivo, datawindow adw_contaspagar);Long ll_Retorno
+
+If ads_Arquivo.RowCount() > 0 Then
+	w_Inicial.OpenUserObject(iuo_BarraProgresso)
+	iuo_BarraProgresso.of_definir_valores(0, ads_Arquivo.RowCount() , 1,'Relacionando T$$HEX1$$ed00$$ENDHEX$$tulos com o Arquivo. Aguarde...') 
+End If
+
+ll_Retorno = of_processar_titulos( ads_arquivo, adw_contaspagar)
+
+//Assim consegue fechar a barra de progresso, idependente do retorno da tela
+w_Inicial.CloseUserObject(iuo_BarraProgresso)
+
+Return ll_Retorno
+end function
+
+public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar);String ls_ChaveNFE, ls_DigitoTitulo
+Long ll_For, ll_Retrieve, ll_Titulo
+Decimal  lde_ValorArquivo, lde_SaldoTitulo
+Decimal lde_ValorArquivo1, lde_ValorArquivo2
+DataStore lds_ContasPagar, lds_Divergencias
+//Date ld_DataAtual, ld_DataVencimentoTitulo
+s_Parametros lst_Divergencias
+
+lds_Divergencias = Create DataStore
+lds_ContasPagar = Create DataStore
+
+lds_ContasPagar.DataObject = 'd_contas_pagar'
+lds_ContasPagar.SetTransObject(SQLCA)
+
+lds_Divergencias.DataObject = 'd_divergencias'
+lds_Divergencias.SetTransObject(SQLCA)
+
+//ld_DataAtual = Date(inv_Funcoes.of_get_data_atual( ))
+
+For ll_For = 1 To ads_Arquivo.RowCount()
+	
+	Yield()//Atualizar Visualmente
+	
+	If IsValid(iuo_BarraProgresso) Then
+		iuo_BarraProgresso.of_Atualizar( ll_For, ads_Arquivo.RowCount())
+	End If
+	
+	ls_ChaveNFE = ads_Arquivo.GetItemString(ll_For, 'chavenfe')
+	If ads_Arquivo.GetItemDecimal(ll_For, 'ValorArquivo1') > 0 Then
+		is_Arquivo1 = 'T'
+	Else
+		is_Arquivo1 = 'F'
+	End If
+	
+	If ads_Arquivo.GetItemDecimal(ll_For, 'ValorArquivo2') > 0 Then
+		is_Arquivo2 = 'T'
+	Else
+		is_Arquivo2 = 'F'
+	End If
+
+	
+	ll_Retrieve = lds_ContasPagar.Retrieve(ls_ChaveNFE, il_idClifor)
+	
+	lde_ValorArquivo = truncate(ads_Arquivo.GetItemDecimal(ll_For,'valoricms'),2)
+	lde_ValorArquivo1 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1'),2)
+	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
+
+	If ll_Retrieve =  0 Then
+		inv_Funcoes.of_Gerar_titulo_avulso( adw_ContasPagar,idw_contas_pagar_avulso , idw_contabil_avulso , il_idCliFor , il_Forma , ls_ChaveNFE, lde_ValorArquivo)
+		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,0,'', 'N$$HEX1$$e300$$ENDHEX$$o foi poss$$HEX1$$ed00$$ENDHEX$$vel encontrar nenhum t$$HEX1$$ed00$$ENDHEX$$tulo relacionado a nota.')
+		
+		Continue
+	End If
+	
+	If ll_Retrieve < 0 Then
+		MessageBox('Buscando T$$HEX1$$ed00$$ENDHEX$$tulos', 'Problemas ao carregar os t$$HEX1$$ed00$$ENDHEX$$tulos relacionados.')
+		Return -1
+	End If
+	
+	If ll_Retrieve > 1 Then
+		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,0,'', 'Mais de uma parcela para o t$$HEX1$$ed00$$ENDHEX$$tulo, n$$HEX1$$e300$$ENDHEX$$o foi possivel importar.')
+		Continue
+	End If
+	
+	ll_Titulo = lds_ContasPagar.GetItemDecimal(1, 'idtitulo')
+	ls_DigitoTitulo = lds_ContasPagar.GetItemString(1, 'digitotitulo')
+	
+	//Se encontrou um titulo bloquado, ele cancela a baixa do registro
+	If inv_Funcoes.of_null(lds_ContasPagar.GetItemString(1,'flagtitulobloqueado'),'F') = 'T' Then 
+		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , 'O t$$HEX1$$ed00$$ENDHEX$$tulo se encontra bloquado e n$$HEX1$$e300$$ENDHEX$$o pode ser baixado.')
+		Continue
+	End If
+	
+	
+//	ld_DataVencimentoTitulo = lds_ContasPagar.GetItemDate(1,'dtvencimento')
+//
+//	//Se encontrou um titulo vencido, ele cancela a baixa do registro
+//	If ld_DataVencimentoTitulo < ld_DataAtual Then 
+//		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , 'O t$$HEX1$$ed00$$ENDHEX$$tulo se encontra vencido e n$$HEX1$$e300$$ENDHEX$$o pode ser baixado.')
+//		Continue
+//	End If
+	
+	lde_SaldoTitulo = lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo')
+	
+//	If lde_ValorArquivo > lde_SaldoTitulo Then
+//		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , &
+//										"T$$HEX1$$ed00$$ENDHEX$$tulo com saldo("+ String(lde_SaldoTitulo,"###,###,###.00") + ") menor que o valor a ser baixado pelo arquivo("+ String(lde_ValorArquivo,"###,###,###.00") + ").")
+//		Continue
+//	End If
+//	
+	If lde_ValorArquivo < lde_SaldoTitulo Then
+		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,ll_Titulo ,ls_DigitoTitulo , &
+										"T$$HEX1$$ed00$$ENDHEX$$tulo sera baixado parcialmente. Saldo do Titulo: " + String(lde_SaldoTitulo,"###,###,###.00") +"; Valor Arquivo: " + String(lde_ValorArquivo,"###,###,###.00") + "." )
+	End If
+	
+	lds_ContasPagar.SetItem(1, 'valorpagamento', lde_ValorArquivo)
+	lds_ContasPagar.SetItem(1, 'ValorArquivo1', lde_ValorArquivo1)
+	lds_ContasPagar.SetItem(1, 'ValorArquivo2', lde_ValorArquivo2)
+	
+	
+	If lds_ContasPagar.RowsMove( 1, lds_ContasPagar.RowCount(), Primary!, adw_ContasPagar, 1, Primary!) < 0 Then
+		MessageBox('Problemas ao manipular o T$$HEX1$$ed00$$ENDHEX$$tulo', 'T$$HEX1$$ed00$$ENDHEX$$tulo n$$HEX1$$e300$$ENDHEX$$o pode ser carregada para o Sistema.')
+		Return -1
+	End If
+	
+Next
+
+If lds_Divergencias.RowCount() > 0 Then 
+	lst_Divergencias.PowerObj[1] = lds_Divergencias
+	OpenWithParm(w_divergencias, lst_Divergencias)
+
+	lst_Divergencias = Message.PowerObjectParm
+	
+	If lst_Divergencias.Long[1] < 0 Then
+		Return -1
+	End If
+End If
+
+Return 1
+end function
+
+public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso);
+Datastore lds_Arquivo
+
+lds_Arquivo = Create DataStore
+
+lds_Arquivo.DataObject = 'd_arquivotitulos'
+lds_Arquivo.SetTransObject(SQLCA)
+
+idw_contas_pagar_avulso = adw_contas_pagar_avulso
+idw_contabil_avulso = adw_contabil_avulso
+
+il_idClifor = al_idClifor
+il_Forma = al_Forma
+
+
+If of_Ler_arquivo(1, lds_Arquivo) < 0 Then
+	Return -1
+Else
+	If MessageBox('Importar arquivo', 'Deseja Importar o segundo arquivo?',  Question!, YesNo!) = 1 Then
+		If of_Ler_arquivo(2, lds_Arquivo) < 0 Then
+			Return -1
+		End If
+	End If
+End If
+
+If of_processa_titulo(lds_Arquivo, adw_contas_pagar) < 0 Then 
+	Return -1
+End If
+
+
+Return 1
 end function
 
 on nv_titulos.create

@@ -2,6 +2,10 @@ HA$PBExportHeader$w_inicial.srw
 forward
 global type w_inicial from window
 end type
+type dw_contabil_avulso from datawindow within w_inicial
+end type
+type dw_contas_pagar_avulso from datawindow within w_inicial
+end type
 type st_nomeforma from statictext within w_inicial
 end type
 type st_nomecliente from statictext within w_inicial
@@ -47,6 +51,8 @@ boolean resizable = true
 long backcolor = 67108864
 string icon = "Form!"
 boolean center = true
+dw_contabil_avulso dw_contabil_avulso
+dw_contas_pagar_avulso dw_contas_pagar_avulso
 st_nomeforma st_nomeforma
 st_nomecliente st_nomecliente
 pb_2 pb_2
@@ -75,7 +81,7 @@ public subroutine of_importar ()
 public subroutine of_resetar_tela ()
 end prototypes
 
-public subroutine of_importar ();Long ll_idClifor
+public subroutine of_importar ();Long ll_idClifor, ll_Forma
 
 nv_Titulos lnv_Titulos
 
@@ -84,13 +90,19 @@ lnv_Titulos = Create nv_Titulos
 of_Resetar_Tela( )
 
 ll_idClifor = Long(em_idClifor.Text)
+ll_Forma = long(em_forma.Text)
 
 If inv_Funcoes.of_verifica_cliente(ll_idClifor) < 0 Then
 	MessageBox('Dados do Cliente', 'Cliente informado inv$$HEX1$$e100$$ENDHEX$$lido.')
 	Return 
 End If
 
-If lnv_Titulos.of_Importar(dw_contas_pagar, Long(em_idclifor.Text)) < 0 Then 
+If inv_Funcoes.of_verifica_forma_pagamento(ll_forma) < 0 Then
+	MessageBox('Dados informados', 'Forma de pagamento inv$$HEX1$$e100$$ENDHEX$$lida.')
+End If
+
+
+If lnv_Titulos.of_Importar(dw_contas_pagar, ll_idClifor, ll_Forma, dw_contas_pagar_avulso, dw_contabil_avulso ) < 0 Then 
 	of_Resetar_Tela( )
 	Return
 End If
@@ -111,6 +123,8 @@ dw_contabil_movimento.Reset()
 dw_contas_pagar_baixas.SetTransObject(SQLCA)
 dw_contas_pagar_baixas.Reset()
 
+dw_contas_pagar_avulso.SetTransObject(SQLCA)
+dw_contas_pagar_baixas.Reset()
 
 end subroutine
 
@@ -122,6 +136,8 @@ pb_2.Triggerevent('clicked')
 end event
 
 on w_inicial.create
+this.dw_contabil_avulso=create dw_contabil_avulso
+this.dw_contas_pagar_avulso=create dw_contas_pagar_avulso
 this.st_nomeforma=create st_nomeforma
 this.st_nomecliente=create st_nomecliente
 this.pb_2=create pb_2
@@ -138,7 +154,9 @@ this.cb_importar=create cb_importar
 this.st_cliente=create st_cliente
 this.gb_1=create gb_1
 this.gb_titulos=create gb_titulos
-this.Control[]={this.st_nomeforma,&
+this.Control[]={this.dw_contabil_avulso,&
+this.dw_contas_pagar_avulso,&
+this.st_nomeforma,&
 this.st_nomecliente,&
 this.pb_2,&
 this.pb_1,&
@@ -157,6 +175,8 @@ this.gb_titulos}
 end on
 
 on w_inicial.destroy
+destroy(this.dw_contabil_avulso)
+destroy(this.dw_contas_pagar_avulso)
 destroy(this.st_nomeforma)
 destroy(this.st_nomecliente)
 destroy(this.pb_2)
@@ -174,6 +194,38 @@ destroy(this.st_cliente)
 destroy(this.gb_1)
 destroy(this.gb_titulos)
 end on
+
+type dw_contabil_avulso from datawindow within w_inicial
+boolean visible = false
+integer x = 3099
+integer y = 2172
+integer width = 1175
+integer height = 124
+integer taborder = 80
+boolean titlebar = true
+string title = "dw_contabil_movimento"
+string dataobject = "d_contabil_movimento"
+boolean hscrollbar = true
+boolean vscrollbar = true
+boolean livescroll = true
+borderstyle borderstyle = stylelowered!
+end type
+
+type dw_contas_pagar_avulso from datawindow within w_inicial
+boolean visible = false
+integer x = 1906
+integer y = 2172
+integer width = 1175
+integer height = 124
+integer taborder = 80
+boolean titlebar = true
+string title = "dw_contas_pagar_avulso"
+string dataobject = "d_duplicatas_pagar"
+boolean hscrollbar = true
+boolean vscrollbar = true
+boolean livescroll = true
+borderstyle borderstyle = stylelowered!
+end type
 
 type st_nomeforma from statictext within w_inicial
 integer x = 3264
@@ -387,8 +439,11 @@ if ll_ret < 0 then
 	messagebox('Aviso','Grava$$HEX2$$e700e300$$ENDHEX$$o abortada.', StopSign!)
 	return
 else
-	ldw_save[1]= dw_contas_pagar_baixas
-	ldw_save[2]= dw_contabil_movimento
+	
+	ldw_save[1]= dw_contas_pagar_avulso
+	ldw_save[2]= dw_contabil_avulso
+	ldw_save[3]= dw_contas_pagar_baixas
+	ldw_save[4]= dw_contabil_movimento
 	
 	
 	If inv_Funcoes.of_update(ldw_save) < 0 Then
