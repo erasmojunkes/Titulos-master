@@ -403,7 +403,7 @@ Else
 End If	
 end function
 
-public function integer of_gerar_titulo_avulso (ref datawindow adw_contas_pagar, ref datawindow adw_contas_pagar_avulso, ref datawindow adw_contabil_movimento, long al_idclifor, long al_formapag, string as_chavenfe, decimal ade_valortitulo);long ll_new, ll_idplanilha, ll_for, ll_newcontabil
+public function integer of_gerar_titulo_avulso (ref datawindow adw_contas_pagar, ref datawindow adw_contas_pagar_avulso, ref datawindow adw_contabil_movimento, long al_idclifor, long al_formapag, string as_chavenfe, decimal ade_valortitulo);long ll_new, ll_idplanilha, ll_for, ll_newcontabil, ll_LinhaVisual
 long ll_idctacredito, ll_idctadebito
 String ls_tiponatureza
 
@@ -445,26 +445,46 @@ adw_contas_pagar_avulso.SetItem(ll_new, 'IDCTACONTABIL', ll_idctacredito)
 adw_contas_pagar_avulso.SetItem(ll_new, 'IDCTACONTABILCONTRAPARTIDA', 1/*verficar*/)
 
 
+ll_LinhaVisual = adw_contas_pagar_avulso.InsertRow(0)
 
-//ll_newcontabil = adw_contabil_movimento.Insertrow(0)
-//
-//
-////CONTA CREDITO
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'IDCTACONTABIL',ll_idctacredito)
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'IDPLANILHA',ll_idplanilha)
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'NUMSEQUENCIA',1)
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'TIPONATUREZALCTO','C')
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'IDEMPRESA', adw_contas_pagar.GetItemnumber(ll_for, 'idempresa'))
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'IDEMPRESADESTINO', adw_contas_pagar.GetItemnumber(ll_for, 'idempresa'))
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'IDUSUARIO', 2)
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'ORIGEMMOVIMENTO', adw_contas_pagar.GetItemString(ll_for, 'ORIGEMMOVIMENTO'))
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'DTMOVIMENTO',DATE(of_get_data_atual( )))
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'VALLANCAMENTO',adw_contas_pagar.GetItemDecimal(ll_for, 'valorpagamento'))
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'COMPLEMENTO','BAIXA DE TITULOS SEFAZ')
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'TIPONATUREZACTA',ls_tiponatureza) 
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'DTLANCAMENTO',DATE(of_get_data_atual( )))
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'DTHORAULTIMAALTERACAO',of_get_data_atual( ))
-//adw_contabil_movimento.SetItem(ll_newcontabil, 'FLAGEXPORTADO','F')
+//Adiciona para a datawindow visual
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'IDEMPRESA', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'IDEMPRESA'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'IDCLIFOR', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'IDCLIFOR'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'IDPLANILHA', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'IDPLANILHA'))	
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'DIGITOTITULO',  adw_contas_pagar_avulso.GetItemString(ll_new, 'DIGITOTITULO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'SERIENOTA', adw_contas_pagar_avulso.GetItemString(ll_new, 'SERIENOTA'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'IDPAGAMENTO', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'IDPAGAMENTO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'ORIGEMMOVIMENTO', adw_contas_pagar_avulso.GetItemString(ll_new, 'ORIGEMMOVIMENTO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'VALTITULO', adw_contas_pagar_avulso.GetItemDecimal(ll_new, 'VALTITULO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'IDUSUARIO', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'IDUSUARIO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'DTMOVIMENTO',adw_contas_pagar_avulso.GetItemDate(ll_new, 'DTMOVIMENTO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'CONTAS_PAGAR_DTEMISSAO', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'CONTAS_PAGAR_DTEMISSAO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'IDTITULO', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'IDTITULO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'DTVENCIMENTO',adw_contas_pagar_avulso.GetItemDate(ll_new, 'DTVENCIMENTO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'OBSTITULO', adw_contas_pagar_avulso.GetItemString(ll_new, 'OBSTITULO'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'IDCTACONTABIL', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'IDCTACONTABIL'))
+adw_contas_pagar.SetItem(ll_LinhaVisual, 'IDCTACONTABILCONTRAPARTIDA', adw_contas_pagar_avulso.GetItemNumber(ll_new, 'IDCTACONTABILCONTRAPARTIDA'))
+
+
+
+ll_newcontabil = adw_contabil_movimento.Insertrow(0)
+
+//CONTA CREDITO
+adw_contabil_movimento.SetItem(ll_newcontabil, 'IDCTACONTABIL',ll_idctacredito)
+adw_contabil_movimento.SetItem(ll_newcontabil, 'IDPLANILHA',ll_idplanilha)
+adw_contabil_movimento.SetItem(ll_newcontabil, 'NUMSEQUENCIA',1)
+adw_contabil_movimento.SetItem(ll_newcontabil, 'TIPONATUREZALCTO','C')
+adw_contabil_movimento.SetItem(ll_newcontabil, 'IDEMPRESA', adw_contas_pagar_avulso.GetItemnumber(ll_for, 'idempresa'))
+adw_contabil_movimento.SetItem(ll_newcontabil, 'IDEMPRESADESTINO', adw_contas_pagar_avulso.GetItemnumber(ll_for, 'idempresa'))
+adw_contabil_movimento.SetItem(ll_newcontabil, 'IDUSUARIO', 2)
+adw_contabil_movimento.SetItem(ll_newcontabil, 'ORIGEMMOVIMENTO', adw_contas_pagar_avulso.GetItemString(ll_for, 'ORIGEMMOVIMENTO'))
+adw_contabil_movimento.SetItem(ll_newcontabil, 'DTMOVIMENTO',DATE(of_get_data_atual( )))
+adw_contabil_movimento.SetItem(ll_newcontabil, 'VALLANCAMENTO',adw_contas_pagar_avulso.GetItemDecimal(ll_for, 'valorpagamento'))
+adw_contabil_movimento.SetItem(ll_newcontabil, 'COMPLEMENTO','BAIXA DE TITULOS SEFAZ')
+adw_contabil_movimento.SetItem(ll_newcontabil, 'TIPONATUREZACTA',ls_tiponatureza) 
+adw_contabil_movimento.SetItem(ll_newcontabil, 'DTLANCAMENTO',DATE(of_get_data_atual( )))
+adw_contabil_movimento.SetItem(ll_newcontabil, 'DTHORAULTIMAALTERACAO',of_get_data_atual( ))
+adw_contabil_movimento.SetItem(ll_newcontabil, 'FLAGEXPORTADO','F')
 
 
 return 1

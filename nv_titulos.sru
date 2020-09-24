@@ -17,6 +17,7 @@ Long il_Forma, il_idClifor
 
 Datawindow idw_contabil_avulso, idw_contas_pagar_avulso
 end variables
+
 forward prototypes
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[])
 public subroutine of_adicionar_divergencia (datastore ads_divergencias, string as_chavenfe, long al_idtitulo, string as_digitotitulo, string as_descricaodivergencia)
