@@ -248,9 +248,11 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
 
 	If ll_Retrieve =  0 Then
-		inv_Funcoes.of_Gerar_titulo_avulso( adw_ContasPagar,idw_contas_pagar_avulso , idw_contabil_avulso , il_idCliFor , il_Forma , ls_ChaveNFE, lde_ValorArquivo)
-		of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,0,'', 'N$$HEX1$$e300$$ENDHEX$$o foi poss$$HEX1$$ed00$$ENDHEX$$vel encontrar nenhum t$$HEX1$$ed00$$ENDHEX$$tulo relacionado a nota.')
-		
+		If inv_Funcoes.of_Gerar_titulo_avulso( adw_ContasPagar,idw_contas_pagar_avulso , idw_contabil_avulso , il_idCliFor , ls_ChaveNFE, lde_ValorArquivo) > 0 Then
+			MessageBox("T$$HEX1$$ed00$$ENDHEX$$tulo Avulso", "Criado t$$HEX1$$ed00$$ENDHEX$$tulo avulso n$$HEX1$$fa00$$ENDHEX$$mero: " + String(adw_ContasPagar.GetItemNumber(1, 'idtitulo')) + ". Chave NFE: '" + ls_ChaveNFE + "'")
+		Else
+			of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,0,'', 'N$$HEX1$$e300$$ENDHEX$$o foi poss$$HEX1$$ed00$$ENDHEX$$vel criar um tiulo avulso para relacionar ao Registro.')
+		End If
 		Continue
 	End If
 	
