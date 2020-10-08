@@ -13,7 +13,7 @@ nv_Funcoes inv_Funcoes
 uo_Progresso iuo_BarraProgresso
 String is_Arquivo1, is_Arquivo2
 String is_CaminhoArquivo1
-Long il_Forma, il_idClifor
+Long il_Forma, il_idClifor, il_idEmpresa
 
 Datawindow idw_contabil_avulso, idw_contas_pagar_avulso
 end variables
@@ -24,7 +24,7 @@ public subroutine of_adicionar_divergencia (datastore ads_divergencias, string a
 public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arquivo)
 public function integer of_processa_titulo (datastore ads_arquivo, datawindow adw_contaspagar)
 public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar)
-public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso)
+public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, long al_idempresa, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso)
 end prototypes
 
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[]);String ls_Value
@@ -74,7 +74,7 @@ ads_divergencias.SetItem(ll_NovaLinha, 'descricaodivergencia', as_DescricaoDiver
 
 end subroutine
 
-public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arquivo);String ls_CaminhoArquivo, ls_Linha, ls_Colunas[], ls_ChaveAntiga, ls_ChaveNFE
+public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arquivo);String ls_CaminhoArquivo, ls_Linha, ls_Colunas[], ls_ChaveAntiga, ls_ChaveNFE, ls_Inscricao
 Long ll_Bytes, ll_Arquivo, ll_Linha, ll_For
 Decimal lde_ValorICMS
 s_Parametros lst_Envio
@@ -132,6 +132,27 @@ Do While (ll_Bytes > 0)
 		
 		If ll_Bytes > 0 Then Exit
 	Next
+	
+	If UpperBound(ls_Colunas) = 3 Then
+		If ls_Colunas[1] = 'INSCRICAO' Then
+			ls_Inscricao = inv_Funcoes.of_Null( ls_Colunas[2], 0)
+			
+			SELECT 
+				IDEMPRESA
+			INTO 
+				:il_idEmpresa
+			FROM 
+				INSCRICAO_ESTADUAL 
+			WHERE 
+				SUBSTR(INSCRESTADUAL,1,2)||'.'||SUBSTR(INSCRESTADUAL,3,3)||'.'|| SUBSTR(INSCRESTADUAL,6,3) || '-' || SUBSTR(INSCRESTADUAL,9,1) = :ls_Inscricao
+			USING SQLCA;
+			
+			if inv_Funcoes.of_Null( il_idEmpresa, 0) = 0 Then
+				MessageBox('Inscri$$HEX2$$e700e300$$ENDHEX$$o Estadual', 'N$$HEX1$$e300$$ENDHEX$$o foi poss$$HEX1$$ed00$$ENDHEX$$vel encontrar a empresa com base na inscri$$HEX2$$e700e300$$ENDHEX$$o estadual presente no arquivo')
+				Return -1 
+			End If
+		End If
+	End If
 	
 	If UpperBound(ls_Colunas) > 8 Then
 		if Len(ls_Colunas[1]) <> 44 Then
@@ -201,7 +222,7 @@ Return ll_Retorno
 end function
 
 public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar);String ls_ChaveNFE, ls_DigitoTitulo
-Long ll_For, ll_Retrieve, ll_Titulo
+Long ll_For, ll_Retrieve, ll_Titulo, ll_Linha
 Decimal  lde_ValorArquivo, lde_SaldoTitulo
 Decimal lde_ValorArquivo1, lde_ValorArquivo2
 DataStore lds_ContasPagar, lds_Divergencias
@@ -248,12 +269,19 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
 
 	If ll_Retrieve =  0 Then
-		If inv_Funcoes.of_Gerar_titulo_avulso( adw_ContasPagar,idw_contas_pagar_avulso , idw_contabil_avulso , il_idCliFor , ls_ChaveNFE, lde_ValorArquivo) > 0 Then
-			MessageBox("T$$HEX1$$ed00$$ENDHEX$$tulo Avulso", "Criado t$$HEX1$$ed00$$ENDHEX$$tulo avulso n$$HEX1$$fa00$$ENDHEX$$mero: " + String(adw_ContasPagar.GetItemNumber(1, 'idtitulo')) + ". Chave NFE: '" + ls_ChaveNFE + "'")
+		If inv_Funcoes.of_Gerar_titulo_avulso( lds_ContasPagar, idw_contas_pagar_avulso , idw_contabil_avulso , il_idCliFor, il_idEmpresa, ls_ChaveNFE, lde_ValorArquivo) > 0 Then
+			
+			//Linha do titulo criado
+			ll_Linha = idw_contas_pagar_avulso.RowCount()
+			
+			ll_Titulo = idw_contas_pagar_avulso.GetItemNumber(ll_Linha, 'idtitulo')
+			ls_DigitoTitulo = idw_contas_pagar_avulso.GetItemString(ll_Linha, 'digitotitulo')
+			
+			of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE, ll_Titulo, ls_DigitoTitulo, "Criado t$$HEX1$$ed00$$ENDHEX$$tulo avulso.")
+			ll_Retrieve = 1
 		Else
 			of_adicionar_divergencia(lds_Divergencias, ls_ChaveNFE,0,'', 'N$$HEX1$$e300$$ENDHEX$$o foi poss$$HEX1$$ed00$$ENDHEX$$vel criar um tiulo avulso para relacionar ao Registro.')
 		End If
-		Continue
 	End If
 	
 	If ll_Retrieve < 0 Then
@@ -266,7 +294,7 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 		Continue
 	End If
 	
-	ll_Titulo = lds_ContasPagar.GetItemDecimal(1, 'idtitulo')
+	ll_Titulo = lds_ContasPagar.GetItemNumber(1, 'idtitulo')
 	ls_DigitoTitulo = lds_ContasPagar.GetItemString(1, 'digitotitulo')
 	
 	//Se encontrou um titulo bloquado, ele cancela a baixa do registro
@@ -323,7 +351,7 @@ End If
 Return 1
 end function
 
-public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso);
+public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, long al_idempresa, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso);
 Datastore lds_Arquivo
 
 lds_Arquivo = Create DataStore
@@ -336,7 +364,7 @@ idw_contabil_avulso = adw_contabil_avulso
 
 il_idClifor = al_idClifor
 il_Forma = al_Forma
-
+//il_idEmpresa = al_idEmpresa
 
 If of_Ler_arquivo(1, lds_Arquivo) < 0 Then
 	Return -1

@@ -2,6 +2,14 @@ HA$PBExportHeader$w_inicial.srw
 forward
 global type w_inicial from window
 end type
+type st_2 from statictext within w_inicial
+end type
+type st_razaoempresa from statictext within w_inicial
+end type
+type pb_3 from picturebutton within w_inicial
+end type
+type em_idempresa from editmask within w_inicial
+end type
 type dw_contabil_avulso from datawindow within w_inicial
 end type
 type dw_contas_pagar_avulso from datawindow within w_inicial
@@ -51,6 +59,10 @@ boolean resizable = true
 long backcolor = 67108864
 string icon = "Form!"
 boolean center = true
+st_2 st_2
+st_razaoempresa st_razaoempresa
+pb_3 pb_3
+em_idempresa em_idempresa
 dw_contabil_avulso dw_contabil_avulso
 dw_contas_pagar_avulso dw_contas_pagar_avulso
 st_nomeforma st_nomeforma
@@ -81,7 +93,7 @@ public subroutine of_importar ()
 public subroutine of_resetar_tela ()
 end prototypes
 
-public subroutine of_importar ();Long ll_idClifor, ll_Forma
+public subroutine of_importar ();Long ll_idClifor, ll_Forma, ll_idEmpresa
 
 nv_Titulos lnv_Titulos
 
@@ -91,6 +103,7 @@ of_Resetar_Tela( )
 
 ll_idClifor = Long(em_idClifor.Text)
 ll_Forma = long(em_forma.Text)
+ll_idEmpresa = Long(em_idEmpresa.Text)
 
 If inv_Funcoes.of_verifica_cliente(ll_idClifor) < 0 Then
 	MessageBox('Dados do Cliente', 'Cliente informado inv$$HEX1$$e100$$ENDHEX$$lido.')
@@ -99,10 +112,15 @@ End If
 
 If inv_Funcoes.of_verifica_forma_pagamento(ll_forma) < 0 Then
 	MessageBox('Dados informados', 'Forma de pagamento inv$$HEX1$$e100$$ENDHEX$$lida.')
+	Return 
 End If
 
+If inv_Funcoes.of_verifica_empresa(ll_idEmpresa) < 0 Then
+	MessageBox('Dados informados', 'Empresa informada inv$$HEX1$$e100$$ENDHEX$$lida.')
+	Return 
+End If
 
-If lnv_Titulos.of_Importar(dw_contas_pagar, ll_idClifor, ll_Forma, dw_contas_pagar_avulso, dw_contabil_avulso ) < 0 Then 
+If lnv_Titulos.of_Importar(dw_contas_pagar, ll_idClifor, ll_Forma, ll_idEmpresa, dw_contas_pagar_avulso, dw_contabil_avulso ) < 0 Then 
 	of_Resetar_Tela( )
 	Return
 End If
@@ -133,9 +151,14 @@ event open;of_Resetar_Tela( )
 
 pb_1.Triggerevent('clicked')
 pb_2.Triggerevent('clicked')
+pb_3.Triggerevent('clicked')
 end event
 
 on w_inicial.create
+this.st_2=create st_2
+this.st_razaoempresa=create st_razaoempresa
+this.pb_3=create pb_3
+this.em_idempresa=create em_idempresa
 this.dw_contabil_avulso=create dw_contabil_avulso
 this.dw_contas_pagar_avulso=create dw_contas_pagar_avulso
 this.st_nomeforma=create st_nomeforma
@@ -154,7 +177,11 @@ this.cb_importar=create cb_importar
 this.st_cliente=create st_cliente
 this.gb_1=create gb_1
 this.gb_titulos=create gb_titulos
-this.Control[]={this.dw_contabil_avulso,&
+this.Control[]={this.st_2,&
+this.st_razaoempresa,&
+this.pb_3,&
+this.em_idempresa,&
+this.dw_contabil_avulso,&
 this.dw_contas_pagar_avulso,&
 this.st_nomeforma,&
 this.st_nomecliente,&
@@ -175,6 +202,10 @@ this.gb_titulos}
 end on
 
 on w_inicial.destroy
+destroy(this.st_2)
+destroy(this.st_razaoempresa)
+destroy(this.pb_3)
+destroy(this.em_idempresa)
 destroy(this.dw_contabil_avulso)
 destroy(this.dw_contas_pagar_avulso)
 destroy(this.st_nomeforma)
@@ -194,6 +225,92 @@ destroy(this.st_cliente)
 destroy(this.gb_1)
 destroy(this.gb_titulos)
 end on
+
+type st_2 from statictext within w_inicial
+boolean visible = false
+integer x = 530
+integer y = 2340
+integer width = 407
+integer height = 64
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+long backcolor = 67108864
+string text = "Empresa Arq."
+alignment alignment = right!
+boolean focusrectangle = false
+end type
+
+type st_razaoempresa from statictext within w_inicial
+boolean visible = false
+integer x = 1472
+integer y = 2328
+integer width = 1243
+integer height = 88
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+long backcolor = 67108864
+boolean border = true
+boolean focusrectangle = false
+end type
+
+type pb_3 from picturebutton within w_inicial
+boolean visible = false
+integer x = 1358
+integer y = 2328
+integer width = 101
+integer height = 88
+integer taborder = 50
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+string picturename = "Find!"
+alignment htextalign = left!
+end type
+
+event clicked;string ls_nome
+long ll_idEmpresa
+ll_idEmpresa = long(em_idEmpresa.Text)
+
+if ll_idEmpresa > 0 then
+	select razaosocial into :ls_nome from dba.empresa where idempresa = :ll_idEmpresa using sqlca;
+	
+	st_razaoempresa.text = ls_nome
+
+end if
+end event
+
+type em_idempresa from editmask within w_inicial
+boolean visible = false
+integer x = 946
+integer y = 2328
+integer width = 407
+integer height = 88
+integer taborder = 40
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+string text = "1"
+alignment alignment = right!
+borderstyle borderstyle = stylelowered!
+string mask = "#########"
+end type
 
 type dw_contabil_avulso from datawindow within w_inicial
 boolean visible = false
@@ -228,10 +345,10 @@ borderstyle borderstyle = stylelowered!
 end type
 
 type st_nomeforma from statictext within w_inicial
-integer x = 3264
-integer y = 84
+integer x = 3063
+integer y = 76
 integer width = 978
-integer height = 64
+integer height = 88
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -240,14 +357,15 @@ fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
 long backcolor = 67108864
+boolean border = true
 boolean focusrectangle = false
 end type
 
 type st_nomecliente from statictext within w_inicial
-integer x = 1033
-integer y = 92
-integer width = 1271
-integer height = 64
+integer x = 983
+integer y = 76
+integer width = 1243
+integer height = 88
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -256,11 +374,12 @@ fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
 long backcolor = 67108864
+boolean border = true
 boolean focusrectangle = false
 end type
 
 type pb_2 from picturebutton within w_inicial
-integer x = 3099
+integer x = 2958
 integer y = 76
 integer width = 101
 integer height = 88
@@ -292,8 +411,8 @@ end if
 end event
 
 type pb_1 from picturebutton within w_inicial
-integer x = 901
-integer y = 80
+integer x = 869
+integer y = 76
 integer width = 101
 integer height = 88
 integer taborder = 30
@@ -321,10 +440,10 @@ end if
 end event
 
 type em_forma from editmask within w_inicial
-integer x = 2839
-integer y = 72
+integer x = 2697
+integer y = 76
 integer width = 251
-integer height = 100
+integer height = 88
 integer taborder = 20
 integer textsize = -10
 integer weight = 400
@@ -334,12 +453,13 @@ fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
 string text = "30"
+alignment alignment = right!
 borderstyle borderstyle = stylelowered!
 string mask = "######"
 end type
 
 type st_forma from statictext within w_inicial
-integer x = 2382
+integer x = 2258
 integer y = 88
 integer width = 462
 integer height = 64
@@ -351,7 +471,7 @@ fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
 long backcolor = 67108864
-string text = "Forma de Pagto"
+string text = "Forma de Pagto."
 boolean focusrectangle = false
 end type
 
@@ -466,9 +586,9 @@ end event
 
 type dw_contas_pagar from datawindow within w_inicial
 integer x = 64
-integer y = 276
-integer width = 4645
-integer height = 1976
+integer y = 252
+integer width = 4649
+integer height = 2004
 string title = "none"
 string dataobject = "d_contas_pagar"
 boolean hscrollbar = true
@@ -478,10 +598,10 @@ borderstyle borderstyle = stylelowered!
 end type
 
 type em_idclifor from editmask within w_inicial
-integer x = 489
-integer y = 72
-integer width = 402
-integer height = 100
+integer x = 457
+integer y = 76
+integer width = 407
+integer height = 88
 integer taborder = 10
 integer textsize = -10
 integer weight = 400
@@ -491,6 +611,7 @@ fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
 string text = "10875"
+alignment alignment = right!
 borderstyle borderstyle = stylelowered!
 string mask = "#########"
 end type
@@ -515,7 +636,7 @@ event clicked;of_Importar( )
 end event
 
 type st_cliente from statictext within w_inicial
-integer x = 59
+integer x = 41
 integer y = 88
 integer width = 407
 integer height = 64
@@ -528,6 +649,7 @@ string facename = "Tahoma"
 long textcolor = 33554432
 long backcolor = 67108864
 string text = "C$$HEX1$$f300$$ENDHEX$$digo Cliente"
+alignment alignment = right!
 boolean focusrectangle = false
 end type
 
@@ -535,7 +657,7 @@ type gb_1 from groupbox within w_inicial
 integer x = 32
 integer y = 12
 integer width = 4722
-integer height = 192
+integer height = 180
 integer textsize = -10
 integer weight = 700
 fontcharset fontcharset = ansi!
@@ -549,9 +671,9 @@ end type
 
 type gb_titulos from groupbox within w_inicial
 integer x = 32
-integer y = 204
+integer y = 192
 integer width = 4722
-integer height = 2080
+integer height = 2100
 integer textsize = -10
 integer weight = 700
 fontcharset fontcharset = ansi!
