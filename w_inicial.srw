@@ -111,7 +111,9 @@ of_Resetar_Tela( )
 
 ll_idClifor = Long(em_idClifor.Text)
 ll_Forma = long(em_forma.Text)
-ldt_Movimento = dw_dtcaixa.GetItemDate(1, 'dtmovimento')
+ll_idusuario = long(em_usuario.text)
+
+ldt_Movimento = date(dw_dtcaixa.GetItemDate(1, 'dtmovimento'))
 
 If inv_Funcoes.of_verifica_cliente(ll_idClifor) < 0 Then
 	MessageBox('Dados do Cliente', 'Cliente informado inv$$HEX1$$e100$$ENDHEX$$lido.')
@@ -128,8 +130,8 @@ If inv_Funcoes.of_verifica_usuario(ll_idUsuario) < 0 Then
 	Return 
 End If
 
-If inv_Funcoes.of_null( ldt_Movimento, Date('01/01/1900')) > Date('01/01/1900') Then
-	MessageBox('Dados do Cliente', 'Cliente informado inv$$HEX1$$e100$$ENDHEX$$lido.')
+If inv_Funcoes.of_null( ldt_Movimento, Date('01/01/1900')) = Date('01/01/1900') Then
+	MessageBox('Dados do informados', 'Data do Caixa inv$$HEX1$$e100$$ENDHEX$$lida.')
 	Return 
 End If
 
@@ -168,6 +170,7 @@ pb_3.Triggerevent('clicked')
 
 dw_dtcaixa.SetTransObject(SQLCA)
 dw_dtcaixa.Retrieve()
+
 
 end event
 
