@@ -13,18 +13,18 @@ nv_Funcoes inv_Funcoes
 uo_Progresso iuo_BarraProgresso
 String is_Arquivo1, is_Arquivo2
 String is_CaminhoArquivo1
-Long il_Forma, il_idClifor, il_idEmpresa
+Long il_Forma, il_idClifor, il_idEmpresa, il_idUsuario
+Date idt_Movimento
 
 Datawindow idw_contabil_avulso, idw_contas_pagar_avulso
 end variables
-
 forward prototypes
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[])
 public subroutine of_adicionar_divergencia (datastore ads_divergencias, string as_chavenfe, long al_idtitulo, string as_digitotitulo, string as_descricaodivergencia)
 public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arquivo)
 public function integer of_processa_titulo (datastore ads_arquivo, datawindow adw_contaspagar)
 public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar)
-public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, long al_idempresa, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso)
+public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, long al_idusuario, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso, date adt_movimento)
 end prototypes
 
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[]);String ls_Value
@@ -74,8 +74,8 @@ ads_divergencias.SetItem(ll_NovaLinha, 'descricaodivergencia', as_DescricaoDiver
 
 end subroutine
 
-public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arquivo);String ls_CaminhoArquivo, ls_Linha, ls_Colunas[], ls_ChaveAntiga, ls_ChaveNFE, ls_Inscricao
-Long ll_Bytes, ll_Arquivo, ll_Linha, ll_For
+public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arquivo);String ls_CaminhoArquivo, ls_Linha, ls_Colunas[], ls_Null[], ls_ChaveAntiga, ls_ChaveNFE, ls_Inscricao
+Long ll_Bytes, ll_Arquivo, ll_Linha, ll_For, ll_Coluna_ICMS
 Decimal lde_ValorICMS
 s_Parametros lst_Envio
 
@@ -119,6 +119,9 @@ ll_Bytes = FileReadEx(ll_Arquivo, ls_Linha)
 
 Do While (ll_Bytes > 0)
 	
+	//Limpa o array, para evitar lixo nas colunas
+	ls_Colunas = ls_Null
+	
 	// Obter valores das colunas
 	if of_colunas_arquivo(ls_Linha, ls_Colunas) < 0 Then
 		MessageBox('Importa$$HEX2$$e700e300$$ENDHEX$$o de Arquivo', 'Problemas ao ler uma linha do arquivo.')
@@ -161,8 +164,11 @@ Do While (ll_Bytes > 0)
 		
 		If ls_Colunas[1] <> ls_ChaveAntiga Then
 			
+			//Estava ficando no campo errado em alguns registros
+			ll_Coluna_ICMS = UpperBound(ls_Colunas) - 1
+			
 			ls_ChaveNFE = String(ls_Colunas[1])
-			lde_ValorICMS = Dec(ls_Colunas[9])
+			lde_ValorICMS = Dec(ls_Colunas[ll_Coluna_ICMS])
 			ll_Linha = 0 
 
 			//Testa se esta inserindo o primeiro arquivo
@@ -172,7 +178,7 @@ Do While (ll_Bytes > 0)
 				If ads_Arquivo.RowCount() > 0 Then
 					ll_Linha = ads_Arquivo.Find("chavenfe = '" + ls_ChaveNFE + "'", 1, ads_Arquivo.RowCount( ))
 					If ll_Linha > 0 Then
-						ads_Arquivo.SetItem(ll_Linha, "ValorArquivo2", Dec(ls_Colunas[9]))
+						ads_Arquivo.SetItem(ll_Linha, "ValorArquivo2", Dec(ls_Colunas[ll_Coluna_ICMS]))
 						lde_ValorICMS += inv_Funcoes.of_null( ads_Arquivo.GetItemDecimal(ll_Linha, 'valoricms'), 0)
 					End If
 				End If
@@ -185,9 +191,9 @@ Do While (ll_Bytes > 0)
 				ll_Linha = ads_Arquivo.InsertRow(0)
 				
 				If ai_NumArquivo = 2 Then
-					ads_Arquivo.SetItem(ll_Linha, "ValorArquivo2", Dec(ls_Colunas[9]))
+					ads_Arquivo.SetItem(ll_Linha, "ValorArquivo2", Dec(ls_Colunas[ll_Coluna_ICMS]))
 				Else	
-					ads_Arquivo.SetItem(ll_Linha, "ValorArquivo1", Dec(ls_Colunas[9]))	
+					ads_Arquivo.SetItem(ll_Linha, "ValorArquivo1", Dec(ls_Colunas[ll_Coluna_ICMS]))	
 				End If
 				ads_Arquivo.SetItem(ll_Linha, "chavenfe", ls_ChaveNFE)
 				
@@ -269,7 +275,7 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
 
 	If ll_Retrieve =  0 Then
-		If inv_Funcoes.of_Gerar_titulo_avulso( lds_ContasPagar, idw_contas_pagar_avulso , idw_contabil_avulso , il_idCliFor, il_idEmpresa, ls_ChaveNFE, lde_ValorArquivo) > 0 Then
+		If inv_Funcoes.of_Gerar_titulo_avulso( lds_ContasPagar, idw_contas_pagar_avulso , idw_contabil_avulso , il_idCliFor, il_idEmpresa, ls_ChaveNFE, lde_ValorArquivo, il_idUsuario, idt_Movimento ) > 0 Then
 			
 			//Linha do titulo criado
 			ll_Linha = idw_contas_pagar_avulso.RowCount()
@@ -351,7 +357,7 @@ End If
 Return 1
 end function
 
-public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, long al_idempresa, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso);
+public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, long al_idusuario, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso, date adt_movimento);
 Datastore lds_Arquivo
 
 lds_Arquivo = Create DataStore
@@ -364,9 +370,11 @@ idw_contabil_avulso = adw_contabil_avulso
 
 il_idClifor = al_idClifor
 il_Forma = al_Forma
+il_idUsuario = al_idUsuario
 //il_idEmpresa = al_idEmpresa
+idt_Movimento = adt_movimento
 
-If of_Ler_arquivo(1, lds_Arquivo) < 0 Then
+If of_Ler_arquivo(1, lds_Arquivo) < 0 Then 
 	Return -1
 Else
 	If MessageBox('Importar arquivo', 'Deseja Importar o segundo arquivo?',  Question!, YesNo!) = 1 Then

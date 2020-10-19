@@ -2,13 +2,17 @@ HA$PBExportHeader$w_inicial.srw
 forward
 global type w_inicial from window
 end type
+type dw_dtcaixa from datawindow within w_inicial
+end type
+type st_1 from statictext within w_inicial
+end type
 type st_2 from statictext within w_inicial
 end type
-type st_razaoempresa from statictext within w_inicial
+type em_usuario from editmask within w_inicial
 end type
 type pb_3 from picturebutton within w_inicial
 end type
-type em_idempresa from editmask within w_inicial
+type st_nomeusuario from statictext within w_inicial
 end type
 type dw_contabil_avulso from datawindow within w_inicial
 end type
@@ -52,17 +56,19 @@ global type w_inicial from window
 integer width = 4809
 integer height = 2544
 boolean titlebar = true
-string title = "Baixa de t$$HEX1$$ed00$$ENDHEX$$tulos ICMS"
+string title = "Baixa de t$$HEX1$$ed00$$ENDHEX$$tulos ICMS - Ver.: 1.0 (19/10/2020)"
 boolean controlmenu = true
 boolean minbox = true
 boolean resizable = true
 long backcolor = 67108864
 string icon = "Form!"
 boolean center = true
+dw_dtcaixa dw_dtcaixa
+st_1 st_1
 st_2 st_2
-st_razaoempresa st_razaoempresa
+em_usuario em_usuario
 pb_3 pb_3
-em_idempresa em_idempresa
+st_nomeusuario st_nomeusuario
 dw_contabil_avulso dw_contabil_avulso
 dw_contas_pagar_avulso dw_contas_pagar_avulso
 st_nomeforma st_nomeforma
@@ -93,7 +99,9 @@ public subroutine of_importar ()
 public subroutine of_resetar_tela ()
 end prototypes
 
-public subroutine of_importar ();Long ll_idClifor, ll_Forma, ll_idEmpresa
+public subroutine of_importar ();Long ll_idClifor, ll_Forma, ll_idUsuario
+Date ldt_Movimento
+
 
 nv_Titulos lnv_Titulos
 
@@ -103,7 +111,7 @@ of_Resetar_Tela( )
 
 ll_idClifor = Long(em_idClifor.Text)
 ll_Forma = long(em_forma.Text)
-ll_idEmpresa = Long(em_idEmpresa.Text)
+ldt_Movimento = dw_dtcaixa.GetItemDate(1, 'dtmovimento')
 
 If inv_Funcoes.of_verifica_cliente(ll_idClifor) < 0 Then
 	MessageBox('Dados do Cliente', 'Cliente informado inv$$HEX1$$e100$$ENDHEX$$lido.')
@@ -115,12 +123,17 @@ If inv_Funcoes.of_verifica_forma_pagamento(ll_forma) < 0 Then
 	Return 
 End If
 
-If inv_Funcoes.of_verifica_empresa(ll_idEmpresa) < 0 Then
-	MessageBox('Dados informados', 'Empresa informada inv$$HEX1$$e100$$ENDHEX$$lida.')
+If inv_Funcoes.of_verifica_usuario(ll_idUsuario) < 0 Then
+	MessageBox('Dados informados', 'Us$$HEX1$$fa00$$ENDHEX$$ario informado inv$$HEX1$$e100$$ENDHEX$$lido.')
 	Return 
 End If
 
-If lnv_Titulos.of_Importar(dw_contas_pagar, ll_idClifor, ll_Forma, ll_idEmpresa, dw_contas_pagar_avulso, dw_contabil_avulso ) < 0 Then 
+If inv_Funcoes.of_null( ldt_Movimento, Date('01/01/1900')) > Date('01/01/1900') Then
+	MessageBox('Dados do Cliente', 'Cliente informado inv$$HEX1$$e100$$ENDHEX$$lido.')
+	Return 
+End If
+
+If lnv_Titulos.of_Importar(dw_contas_pagar, ll_idClifor, ll_Forma, ll_idUsuario, dw_contas_pagar_avulso, dw_contabil_avulso, ldt_Movimento) < 0 Then 
 	of_Resetar_Tela( )
 	Return
 End If
@@ -152,13 +165,19 @@ event open;of_Resetar_Tela( )
 pb_1.Triggerevent('clicked')
 pb_2.Triggerevent('clicked')
 pb_3.Triggerevent('clicked')
+
+dw_dtcaixa.SetTransObject(SQLCA)
+dw_dtcaixa.Retrieve()
+
 end event
 
 on w_inicial.create
+this.dw_dtcaixa=create dw_dtcaixa
+this.st_1=create st_1
 this.st_2=create st_2
-this.st_razaoempresa=create st_razaoempresa
+this.em_usuario=create em_usuario
 this.pb_3=create pb_3
-this.em_idempresa=create em_idempresa
+this.st_nomeusuario=create st_nomeusuario
 this.dw_contabil_avulso=create dw_contabil_avulso
 this.dw_contas_pagar_avulso=create dw_contas_pagar_avulso
 this.st_nomeforma=create st_nomeforma
@@ -177,10 +196,12 @@ this.cb_importar=create cb_importar
 this.st_cliente=create st_cliente
 this.gb_1=create gb_1
 this.gb_titulos=create gb_titulos
-this.Control[]={this.st_2,&
-this.st_razaoempresa,&
+this.Control[]={this.dw_dtcaixa,&
+this.st_1,&
+this.st_2,&
+this.em_usuario,&
 this.pb_3,&
-this.em_idempresa,&
+this.st_nomeusuario,&
 this.dw_contabil_avulso,&
 this.dw_contas_pagar_avulso,&
 this.st_nomeforma,&
@@ -202,10 +223,12 @@ this.gb_titulos}
 end on
 
 on w_inicial.destroy
+destroy(this.dw_dtcaixa)
+destroy(this.st_1)
 destroy(this.st_2)
-destroy(this.st_razaoempresa)
+destroy(this.em_usuario)
 destroy(this.pb_3)
-destroy(this.em_idempresa)
+destroy(this.st_nomeusuario)
 destroy(this.dw_contabil_avulso)
 destroy(this.dw_contas_pagar_avulso)
 destroy(this.st_nomeforma)
@@ -226,10 +249,40 @@ destroy(this.gb_1)
 destroy(this.gb_titulos)
 end on
 
+type dw_dtcaixa from datawindow within w_inicial
+integer x = 2688
+integer y = 180
+integer width = 754
+integer height = 96
+integer taborder = 30
+string title = "none"
+string dataobject = "d_dtcaixa"
+boolean border = false
+boolean livescroll = true
+borderstyle borderstyle = stylelowered!
+end type
+
+type st_1 from statictext within w_inicial
+integer x = 2254
+integer y = 196
+integer width = 434
+integer height = 64
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+long backcolor = 67108864
+string text = "Data Movimento"
+alignment alignment = right!
+boolean focusrectangle = false
+end type
+
 type st_2 from statictext within w_inicial
-boolean visible = false
-integer x = 530
-integer y = 2340
+integer x = 41
+integer y = 196
 integer width = 407
 integer height = 64
 integer textsize = -10
@@ -240,15 +293,70 @@ fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
 long backcolor = 67108864
-string text = "Empresa Arq."
+string text = "C$$HEX1$$f300$$ENDHEX$$digo Usu$$HEX1$$e100$$ENDHEX$$rio"
 alignment alignment = right!
 boolean focusrectangle = false
 end type
 
-type st_razaoempresa from statictext within w_inicial
-boolean visible = false
-integer x = 1472
-integer y = 2328
+type em_usuario from editmask within w_inicial
+integer x = 457
+integer y = 184
+integer width = 407
+integer height = 88
+integer taborder = 40
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+string text = "2"
+alignment alignment = right!
+borderstyle borderstyle = stylelowered!
+string mask = "#########"
+end type
+
+type pb_3 from picturebutton within w_inicial
+integer x = 869
+integer y = 184
+integer width = 101
+integer height = 88
+integer taborder = 20
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+string picturename = "Find!"
+alignment htextalign = left!
+end type
+
+event clicked;string ls_nome
+long ll_usuario
+ll_usuario = long(em_usuario.text)
+
+if ll_usuario > 0 then
+	SELECT 
+		NOMEUSUARIO 
+	INTO 
+		:ls_nome
+	FROM
+		DBA.USUARIO 
+	WHERE
+		IDUSUARIO = :ll_usuario 
+	Using sqlca;
+		
+	st_nomeusuario.text = ls_nome; 
+		
+
+end if
+end event
+
+type st_nomeusuario from statictext within w_inicial
+integer x = 983
+integer y = 184
 integer width = 1243
 integer height = 88
 integer textsize = -10
@@ -261,55 +369,6 @@ long textcolor = 33554432
 long backcolor = 67108864
 boolean border = true
 boolean focusrectangle = false
-end type
-
-type pb_3 from picturebutton within w_inicial
-boolean visible = false
-integer x = 1358
-integer y = 2328
-integer width = 101
-integer height = 88
-integer taborder = 50
-integer textsize = -10
-integer weight = 400
-fontcharset fontcharset = ansi!
-fontpitch fontpitch = variable!
-fontfamily fontfamily = swiss!
-string facename = "Tahoma"
-string picturename = "Find!"
-alignment htextalign = left!
-end type
-
-event clicked;string ls_nome
-long ll_idEmpresa
-ll_idEmpresa = long(em_idEmpresa.Text)
-
-if ll_idEmpresa > 0 then
-	select razaosocial into :ls_nome from dba.empresa where idempresa = :ll_idEmpresa using sqlca;
-	
-	st_razaoempresa.text = ls_nome
-
-end if
-end event
-
-type em_idempresa from editmask within w_inicial
-boolean visible = false
-integer x = 946
-integer y = 2328
-integer width = 407
-integer height = 88
-integer taborder = 40
-integer textsize = -10
-integer weight = 400
-fontcharset fontcharset = ansi!
-fontpitch fontpitch = variable!
-fontfamily fontfamily = swiss!
-string facename = "Tahoma"
-long textcolor = 33554432
-string text = "1"
-alignment alignment = right!
-borderstyle borderstyle = stylelowered!
-string mask = "#########"
 end type
 
 type dw_contabil_avulso from datawindow within w_inicial
@@ -459,7 +518,7 @@ string mask = "######"
 end type
 
 type st_forma from statictext within w_inicial
-integer x = 2258
+integer x = 2226
 integer y = 88
 integer width = 462
 integer height = 64
@@ -472,6 +531,7 @@ string facename = "Tahoma"
 long textcolor = 33554432
 long backcolor = 67108864
 string text = "Forma de Pagto."
+alignment alignment = right!
 boolean focusrectangle = false
 end type
 
@@ -540,10 +600,13 @@ string facename = "Tahoma"
 string text = "Gravar Baixas"
 end type
 
-event clicked;long ll_forma, ll_ret
+event clicked;long ll_forma, ll_ret, ll_idUsuario
+Date ldt_Movimento
 datawindow ldw_save[]
 
 ll_forma = long(em_forma.Text)
+ll_idUsuario = long(em_Usuario.Text)
+ldt_Movimento = dw_dtcaixa.GetItemDate(1, 'dtmovimento')
 
 nv_Titulos lnv_Titulos
 lnv_Titulos = Create nv_Titulos 
@@ -553,7 +616,7 @@ If inv_Funcoes.of_verifica_forma_pagamento(ll_forma) < 0 Then
 	MessageBox('Dados informados', 'Forma de pagamento inv$$HEX1$$e100$$ENDHEX$$lida.')
 End If
 
-ll_ret = inv_Funcoes.of_baixa_titulo( ref dw_contas_pagar,ref dw_contas_pagar_baixas,ref dw_contabil_movimento, ll_forma)
+ll_ret = inv_Funcoes.of_baixa_titulo( ref dw_contas_pagar,ref dw_contas_pagar_baixas,ref dw_contabil_movimento, ll_forma, ll_idUsuario, ldt_Movimento)
 
 if ll_ret < 0 then
 	messagebox('Aviso','Grava$$HEX2$$e700e300$$ENDHEX$$o abortada.', StopSign!)
@@ -586,9 +649,9 @@ end event
 
 type dw_contas_pagar from datawindow within w_inicial
 integer x = 64
-integer y = 252
+integer y = 360
 integer width = 4649
-integer height = 2004
+integer height = 1884
 string title = "none"
 string dataobject = "d_contas_pagar"
 boolean hscrollbar = true
@@ -657,7 +720,7 @@ type gb_1 from groupbox within w_inicial
 integer x = 32
 integer y = 12
 integer width = 4722
-integer height = 180
+integer height = 288
 integer textsize = -10
 integer weight = 700
 fontcharset fontcharset = ansi!
@@ -671,9 +734,9 @@ end type
 
 type gb_titulos from groupbox within w_inicial
 integer x = 32
-integer y = 192
+integer y = 300
 integer width = 4722
-integer height = 2100
+integer height = 1980
 integer textsize = -10
 integer weight = 700
 fontcharset fontcharset = ansi!
