@@ -9,18 +9,22 @@ table(column=(type=char(44) updatewhereclause=yes name=chavenfe dbname="CHAVENFE
  column=(type=decimal(6) updatewhereclause=yes name=valoricms dbname="VALORICMS" initial="0" )
  column=(type=decimal(6) updatewhereclause=yes name=valorarquivo1 dbname="VALORARQUIVO1" initial="0" )
  column=(type=decimal(6) updatewhereclause=yes name=valorarquivo2 dbname="VALORARQUIVO2" initial="0" )
+ column=(type=char(1) updatewhereclause=yes name=somou dbname="SOMOU" )
  retrieve="SELECT 
 	CAST('' AS VARCHAR(44) ) AS CHAVENFE,
 	CAST(0 AS DECIMAL(16,6)) AS VALORICMS,
 	CAST(0 AS DECIMAL(16,6)) AS VALORARQUIVO1,
-	CAST(0 AS DECIMAL(16,6)) AS VALORARQUIVO2
+	CAST(0 AS DECIMAL(16,6)) AS VALORARQUIVO2,
+	cast('F' as char(1)) as somou
 FROM 
 	DUMMY
 " )
-column(band=detail id=3 alignment="0" tabsequence=0 border="0" color="33554432" x="9" y="0" height="76" width="2519" html.valueishtml="0"  name=valorarquivo1 visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
 text(band=header alignment="0" text="Valorarquivo1" border="0" color="33554432" x="5" y="4" height="76" width="2523" html.valueishtml="0"  name=valorarquivo1_t visible="1"  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
-column(band=detail id=4 alignment="0" tabsequence=0 border="0" color="33554432" x="2542" y="0" height="76" width="2519" html.valueishtml="0"  name=valorarquivo2 visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
 text(band=header alignment="0" text="Valorarquivo2" border="0" color="33554432" x="2537" y="4" height="76" width="2523" html.valueishtml="0"  name=valorarquivo2_t visible="1"  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
+column(band=detail id=3 alignment="0" tabsequence=32766 border="0" color="33554432" x="9" y="0" height="76" width="2519" format="[general]" html.valueishtml="0"  name=valorarquivo1 visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
+column(band=detail id=4 alignment="0" tabsequence=32766 border="0" color="33554432" x="2542" y="0" height="76" width="2519" format="[general]" html.valueishtml="0"  name=valorarquivo2 visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
+column(band=detail id=5 alignment="0" tabsequence=0 border="0" color="33554432" x="5074" y="0" height="76" width="23" html.valueishtml="0"  name=somou visible="1" edit.limit=0 edit.case=any edit.focusrectangle=no edit.autoselect=no  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
+text(band=header alignment="0" text="Somou" border="0" color="33554432" x="5070" y="4" height="76" width="27" html.valueishtml="0"  name=somou_t visible="1"  font.face="Tahoma" font.height="-12" font.weight="400"  font.family="2" font.pitch="2" font.charset="0" background.mode="2" background.color="1073741824" )
 htmltable(border="1" )
 htmlgen(clientevents="1" clientvalidation="1" clientcomputedfields="1" clientformatting="0" clientscriptable="0" generatejavascript="1" encodeselflinkargs="1" netscapelayers="0" pagingmethod=0 generatedddwframes="1" )
 xhtmlgen() cssgen(sessionspecific="0" )

@@ -18,6 +18,7 @@ Date idt_Movimento
 
 Datawindow idw_contabil_avulso, idw_contas_pagar_avulso
 end variables
+
 forward prototypes
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[])
 public subroutine of_adicionar_divergencia (datastore ads_divergencias, string as_chavenfe, long al_idtitulo, string as_digitotitulo, string as_descricaodivergencia)
@@ -25,6 +26,7 @@ public function integer of_ler_arquivo (integer ai_numarquivo, datastore ads_arq
 public function integer of_processa_titulo (datastore ads_arquivo, datawindow adw_contaspagar)
 public function integer of_processar_titulos (datastore ads_arquivo, datawindow adw_contaspagar)
 public function integer of_importar (datawindow adw_contas_pagar, long al_idclifor, long al_forma, long al_idusuario, datawindow adw_contas_pagar_avulso, datawindow adw_contabil_avulso, date adt_movimento)
+public function long of_get_empresa ()
 end prototypes
 
 public function integer of_colunas_arquivo (string as_linha, ref string as_colunas[]);String ls_Value
@@ -179,6 +181,7 @@ Do While (ll_Bytes > 0)
 					ll_Linha = ads_Arquivo.Find("chavenfe = '" + ls_ChaveNFE + "'", 1, ads_Arquivo.RowCount( ))
 					If ll_Linha > 0 Then
 						ads_Arquivo.SetItem(ll_Linha, "ValorArquivo2", Dec(ls_Colunas[ll_Coluna_ICMS]))
+						ads_Arquivo.SetItem(ll_Linha, "somou", 'T')
 						lde_ValorICMS += inv_Funcoes.of_null( ads_Arquivo.GetItemDecimal(ll_Linha, 'valoricms'), 0)
 					End If
 				End If
@@ -267,7 +270,8 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 		is_Arquivo2 = 'F'
 	End If
 
-	
+
+
 	ll_Retrieve = lds_ContasPagar.Retrieve(ls_ChaveNFE, il_idClifor)
 	
 	lde_ValorArquivo = truncate(ads_Arquivo.GetItemDecimal(ll_For,'valoricms'),2)
@@ -336,6 +340,20 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 	lds_ContasPagar.SetItem(1, 'ValorArquivo2', lde_ValorArquivo2)
 	
 	
+	If lds_ContasPagar.GetItemDecimal(1,'valorpagamento') >  lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo') then
+		if  ads_Arquivo.GetItemString(ll_For, 'somou') <> 'T' then
+			
+			lds_ContasPagar.SetItem(1, 'valjuros1', lds_ContasPagar.GetItemDecimal(1,'valorpagamento') - lde_ValorArquivo1)
+			lds_ContasPagar.SetItem(1, 'valjuros2', lds_ContasPagar.GetItemDecimal(1,'valorpagamento') - lde_ValorArquivo2)
+
+		else
+			lds_ContasPagar.SetItem(1, 'valjuros1', lds_ContasPagar.GetItemDecimal(1,'valorpagamento') - lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo'))
+		end if
+	else
+		lds_ContasPagar.SetItem(1, 'valjuros1', 0)
+		lds_ContasPagar.SetItem(1, 'valjuros2', 0)
+	end if
+	
 	If lds_ContasPagar.RowsMove( 1, lds_ContasPagar.RowCount(), Primary!, adw_ContasPagar, 1, Primary!) < 0 Then
 		MessageBox('Problemas ao manipular o T$$HEX1$$ed00$$ENDHEX$$tulo', 'T$$HEX1$$ed00$$ENDHEX$$tulo n$$HEX1$$e300$$ENDHEX$$o pode ser carregada para o Sistema.')
 		Return -1
@@ -390,6 +408,9 @@ End If
 
 
 Return 1
+end function
+
+public function long of_get_empresa ();return il_idEmpresa
 end function
 
 on nv_titulos.create
