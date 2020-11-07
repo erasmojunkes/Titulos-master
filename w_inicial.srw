@@ -2,6 +2,16 @@ HA$PBExportHeader$w_inicial.srw
 forward
 global type w_inicial from window
 end type
+type em_ctataxa from editmask within w_inicial
+end type
+type st_4 from statictext within w_inicial
+end type
+type em_valtaxa from editmask within w_inicial
+end type
+type st_3 from statictext within w_inicial
+end type
+type cbx_agrupar from checkbox within w_inicial
+end type
 type dw_dtcaixa from datawindow within w_inicial
 end type
 type st_1 from statictext within w_inicial
@@ -53,16 +63,21 @@ end type
 end forward
 
 global type w_inicial from window
-integer width = 4809
+integer width = 5138
 integer height = 2544
 boolean titlebar = true
-string title = "Baixa de t$$HEX1$$ed00$$ENDHEX$$tulos ICMS - Ver.: 1.0 (19/10/2020)"
+string title = "Baixa de t$$HEX1$$ed00$$ENDHEX$$tulos ICMS - Ver.: 1.0 (27/10/2020)"
 boolean controlmenu = true
 boolean minbox = true
 boolean resizable = true
 long backcolor = 67108864
 string icon = "Form!"
 boolean center = true
+em_ctataxa em_ctataxa
+st_4 st_4
+em_valtaxa em_valtaxa
+st_3 st_3
+cbx_agrupar cbx_agrupar
 dw_dtcaixa dw_dtcaixa
 st_1 st_1
 st_2 st_2
@@ -92,8 +107,11 @@ global w_inicial w_inicial
 
 type variables
 nv_Funcoes inv_Funcoes
-end variables
 
+String is_Sort
+
+long il_idempresa
+end variables
 forward prototypes
 public subroutine of_importar ()
 public subroutine of_resetar_tela ()
@@ -141,13 +159,13 @@ If lnv_Titulos.of_Importar(dw_contas_pagar, ll_idClifor, ll_Forma, ll_idUsuario,
 End If
 
 
+il_idempresa = lnv_Titulos.of_get_empresa()
+
 
 
 end subroutine
 
-public subroutine of_resetar_tela ();inv_Funcoes = Create nv_Funcoes
-
-dw_contas_pagar.SetTransObject(SQLCA)
+public subroutine of_resetar_tela ();dw_contas_pagar.SetTransObject(SQLCA)
 dw_contas_pagar.Reset()
 
 dw_contabil_movimento.SetTransObject(SQLCA)
@@ -163,18 +181,25 @@ end subroutine
 
 event open;of_Resetar_Tela( )
 
+inv_Funcoes = Create nv_Funcoes
 
 pb_1.Triggerevent('clicked')
 pb_2.Triggerevent('clicked')
 pb_3.Triggerevent('clicked')
 
-dw_dtcaixa.SetTransObject(SQLCA)
-dw_dtcaixa.Retrieve()
+dw_dtcaixa.reset()
+dw_dtcaixa.insertrow(0)
+dw_dtcaixa.object.dtmovimento[1] = inv_funcoes.of_get_data_atual( )
 
 
 end event
 
 on w_inicial.create
+this.em_ctataxa=create em_ctataxa
+this.st_4=create st_4
+this.em_valtaxa=create em_valtaxa
+this.st_3=create st_3
+this.cbx_agrupar=create cbx_agrupar
 this.dw_dtcaixa=create dw_dtcaixa
 this.st_1=create st_1
 this.st_2=create st_2
@@ -199,7 +224,12 @@ this.cb_importar=create cb_importar
 this.st_cliente=create st_cliente
 this.gb_1=create gb_1
 this.gb_titulos=create gb_titulos
-this.Control[]={this.dw_dtcaixa,&
+this.Control[]={this.em_ctataxa,&
+this.st_4,&
+this.em_valtaxa,&
+this.st_3,&
+this.cbx_agrupar,&
+this.dw_dtcaixa,&
 this.st_1,&
 this.st_2,&
 this.em_usuario,&
@@ -226,6 +256,11 @@ this.gb_titulos}
 end on
 
 on w_inicial.destroy
+destroy(this.em_ctataxa)
+destroy(this.st_4)
+destroy(this.em_valtaxa)
+destroy(this.st_3)
+destroy(this.cbx_agrupar)
 destroy(this.dw_dtcaixa)
 destroy(this.st_1)
 destroy(this.st_2)
@@ -252,12 +287,107 @@ destroy(this.gb_1)
 destroy(this.gb_titulos)
 end on
 
+type em_ctataxa from editmask within w_inicial
+integer x = 4581
+integer y = 200
+integer width = 407
+integer height = 88
+integer taborder = 90
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+long backcolor = 15780518
+string text = "4110308"
+alignment alignment = right!
+borderstyle borderstyle = stylelowered!
+maskdatatype maskdatatype = decimalmask!
+string mask = "#########"
+end type
+
+type st_4 from statictext within w_inicial
+integer x = 4096
+integer y = 208
+integer width = 475
+integer height = 64
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+long backcolor = 67108864
+string text = "Cta Contabil Taxa"
+alignment alignment = right!
+boolean focusrectangle = false
+end type
+
+type em_valtaxa from editmask within w_inicial
+integer x = 3634
+integer y = 192
+integer width = 407
+integer height = 88
+integer taborder = 80
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+long backcolor = 15780518
+string text = "2,50"
+alignment alignment = right!
+borderstyle borderstyle = stylelowered!
+maskdatatype maskdatatype = decimalmask!
+string mask = "###,##0.00"
+end type
+
+type st_3 from statictext within w_inicial
+integer x = 3150
+integer y = 200
+integer width = 471
+integer height = 64
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+long backcolor = 67108864
+string text = "Valor Taxa Banco"
+alignment alignment = right!
+boolean focusrectangle = false
+end type
+
+type cbx_agrupar from checkbox within w_inicial
+integer x = 562
+integer y = 2328
+integer width = 741
+integer height = 80
+integer taborder = 120
+integer textsize = -9
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+long textcolor = 33554432
+long backcolor = 67108864
+string text = "Agrupar baixas"
+end type
+
 type dw_dtcaixa from datawindow within w_inicial
 integer x = 2688
 integer y = 180
-integer width = 754
+integer width = 439
 integer height = 96
-integer taborder = 30
+integer taborder = 70
 string title = "none"
 string dataobject = "d_dtcaixa"
 boolean border = false
@@ -306,7 +436,7 @@ integer x = 457
 integer y = 184
 integer width = 407
 integer height = 88
-integer taborder = 40
+integer taborder = 50
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -314,6 +444,7 @@ fontpitch fontpitch = variable!
 fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
+long backcolor = 15780518
 string text = "2"
 alignment alignment = right!
 borderstyle borderstyle = stylelowered!
@@ -325,7 +456,7 @@ integer x = 869
 integer y = 184
 integer width = 101
 integer height = 88
-integer taborder = 20
+integer taborder = 60
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -380,7 +511,7 @@ integer x = 3099
 integer y = 2172
 integer width = 1175
 integer height = 124
-integer taborder = 80
+integer taborder = 150
 boolean titlebar = true
 string title = "dw_contabil_movimento"
 string dataobject = "d_contabil_movimento"
@@ -396,7 +527,7 @@ integer x = 1906
 integer y = 2172
 integer width = 1175
 integer height = 124
-integer taborder = 80
+integer taborder = 160
 boolean titlebar = true
 string title = "dw_contas_pagar_avulso"
 string dataobject = "d_duplicatas_pagar"
@@ -445,7 +576,7 @@ integer x = 2958
 integer y = 76
 integer width = 101
 integer height = 88
-integer taborder = 30
+integer taborder = 40
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -477,7 +608,7 @@ integer x = 869
 integer y = 76
 integer width = 101
 integer height = 88
-integer taborder = 30
+integer taborder = 20
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -506,7 +637,7 @@ integer x = 2697
 integer y = 76
 integer width = 251
 integer height = 88
-integer taborder = 20
+integer taborder = 30
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -514,6 +645,7 @@ fontpitch fontpitch = variable!
 fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
+long backcolor = 15780518
 string text = "30"
 alignment alignment = right!
 borderstyle borderstyle = stylelowered!
@@ -544,7 +676,7 @@ integer x = 3099
 integer y = 2304
 integer width = 1175
 integer height = 124
-integer taborder = 70
+integer taborder = 140
 boolean titlebar = true
 string title = "dw_contabil_movimento"
 string dataobject = "d_contabil_movimento"
@@ -560,7 +692,7 @@ integer x = 1906
 integer y = 2304
 integer width = 1175
 integer height = 124
-integer taborder = 80
+integer taborder = 170
 boolean titlebar = true
 string title = "dw_contas_pagar_baixas"
 string dataobject = "d_contas_pagar_baixas"
@@ -575,7 +707,7 @@ integer x = 32
 integer y = 2308
 integer width = 457
 integer height = 112
-integer taborder = 50
+integer taborder = 110
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -589,11 +721,11 @@ event clicked;inv_Funcoes.of_Imprimir(dw_contas_pagar )
 end event
 
 type cb_baixar from commandbutton within w_inicial
-integer x = 4297
+integer x = 4585
 integer y = 2308
 integer width = 457
 integer height = 112
-integer taborder = 60
+integer taborder = 130
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -603,23 +735,35 @@ string facename = "Tahoma"
 string text = "Gravar Baixas"
 end type
 
-event clicked;long ll_forma, ll_ret, ll_idUsuario
+event clicked;long ll_forma, ll_ret, ll_idUsuario, ll_ctataxa
 Date ldt_Movimento
+Decimal ld_valtaxa
 datawindow ldw_save[]
+s_parametros ls_manda
 
 ll_forma = long(em_forma.Text)
 ll_idUsuario = long(em_Usuario.Text)
 ldt_Movimento = dw_dtcaixa.GetItemDate(1, 'dtmovimento')
+ll_ctataxa = long(em_ctataxa.text)
+ld_valtaxa = dec(em_valtaxa.text)
 
 nv_Titulos lnv_Titulos
 lnv_Titulos = Create nv_Titulos 
 
 
+ls_manda.long[1] = ll_forma
+ls_manda.long[2] = ll_idUsuario
+ls_manda.long[3] = ll_ctataxa
+ls_manda.long[4] = il_idempresa
+ls_manda.Decimal[1] = ld_valtaxa
+ls_manda.date[1] = ldt_Movimento
+ls_manda.boolean[1] = cbx_agrupar.checked
+
 If inv_Funcoes.of_verifica_forma_pagamento(ll_forma) < 0 Then
 	MessageBox('Dados informados', 'Forma de pagamento inv$$HEX1$$e100$$ENDHEX$$lida.')
 End If
 
-ll_ret = inv_Funcoes.of_baixa_titulo( ref dw_contas_pagar,ref dw_contas_pagar_baixas,ref dw_contabil_movimento, ll_forma, ll_idUsuario, ldt_Movimento)
+ll_ret = inv_Funcoes.of_baixa_titulo( ref dw_contas_pagar,ref dw_contas_pagar_baixas,ref dw_contabil_movimento, ls_manda)
 
 if ll_ret < 0 then
 	messagebox('Aviso','Grava$$HEX2$$e700e300$$ENDHEX$$o abortada.', StopSign!)
@@ -652,9 +796,9 @@ end event
 
 type dw_contas_pagar from datawindow within w_inicial
 integer x = 64
-integer y = 360
-integer width = 4649
-integer height = 1884
+integer y = 388
+integer width = 4942
+integer height = 1856
 string title = "none"
 string dataobject = "d_contas_pagar"
 boolean hscrollbar = true
@@ -662,6 +806,26 @@ boolean vscrollbar = true
 boolean livescroll = true
 borderstyle borderstyle = stylelowered!
 end type
+
+event clicked;String ls_coluna, ls_newcol 
+ls_coluna = dwo.name
+
+if right(ls_coluna,2) = '_t' then
+	ls_newcol = left(ls_coluna,len(ls_coluna)-2)
+
+	if Trim(is_Sort) = "A" then
+		is_Sort = " D"
+		this.SetSort(ls_newcol + is_Sort) 
+	else
+		is_Sort = " A"  
+		this.SetSort(ls_newcol + is_Sort) 
+	end if
+
+	this.sort()
+	
+end if
+
+end event
 
 type em_idclifor from editmask within w_inicial
 integer x = 457
@@ -676,6 +840,7 @@ fontpitch fontpitch = variable!
 fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
+long backcolor = 15780518
 string text = "10875"
 alignment alignment = right!
 borderstyle borderstyle = stylelowered!
@@ -683,11 +848,11 @@ string mask = "#########"
 end type
 
 type cb_importar from commandbutton within w_inicial
-integer x = 4315
+integer x = 4576
 integer y = 72
-integer width = 402
+integer width = 411
 integer height = 100
-integer taborder = 30
+integer taborder = 100
 integer textsize = -10
 integer weight = 400
 fontcharset fontcharset = ansi!
@@ -722,8 +887,8 @@ end type
 type gb_1 from groupbox within w_inicial
 integer x = 32
 integer y = 12
-integer width = 4722
-integer height = 288
+integer width = 5019
+integer height = 308
 integer textsize = -10
 integer weight = 700
 fontcharset fontcharset = ansi!
@@ -737,9 +902,9 @@ end type
 
 type gb_titulos from groupbox within w_inicial
 integer x = 32
-integer y = 300
-integer width = 4722
-integer height = 1980
+integer y = 320
+integer width = 5029
+integer height = 1968
 integer textsize = -10
 integer weight = 700
 fontcharset fontcharset = ansi!
