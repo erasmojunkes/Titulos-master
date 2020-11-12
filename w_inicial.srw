@@ -66,7 +66,7 @@ global type w_inicial from window
 integer width = 5138
 integer height = 2544
 boolean titlebar = true
-string title = "Baixa de t$$HEX1$$ed00$$ENDHEX$$tulos ICMS - Ver.: 1.0 (27/10/2020)"
+string title = "Baixa de t$$HEX1$$ed00$$ENDHEX$$tulos ICMS - Ver.: 2.0 (12/11/2020)"
 boolean controlmenu = true
 boolean minbox = true
 boolean resizable = true
@@ -112,6 +112,7 @@ String is_Sort
 
 long il_idempresa
 end variables
+
 forward prototypes
 public subroutine of_importar ()
 public subroutine of_resetar_tela ()
@@ -152,6 +153,7 @@ If inv_Funcoes.of_null( ldt_Movimento, Date('01/01/1900')) = Date('01/01/1900') 
 	MessageBox('Dados do informados', 'Data do Caixa inv$$HEX1$$e100$$ENDHEX$$lida.')
 	Return 
 End If
+
 
 If lnv_Titulos.of_Importar(dw_contas_pagar, ll_idClifor, ll_Forma, ll_idUsuario, dw_contas_pagar_avulso, dw_contabil_avulso, ldt_Movimento) < 0 Then 
 	of_Resetar_Tela( )
@@ -368,7 +370,7 @@ end type
 type cbx_agrupar from checkbox within w_inicial
 integer x = 562
 integer y = 2328
-integer width = 741
+integer width = 896
 integer height = 80
 integer taborder = 120
 integer textsize = -9
@@ -379,7 +381,7 @@ fontfamily fontfamily = swiss!
 string facename = "Tahoma"
 long textcolor = 33554432
 long backcolor = 67108864
-string text = "Agrupar baixas"
+string text = "Gerar Baixas Individuais por t$$HEX1$$ed00$$ENDHEX$$tulo"
 end type
 
 type dw_dtcaixa from datawindow within w_inicial
@@ -763,7 +765,7 @@ If inv_Funcoes.of_verifica_forma_pagamento(ll_forma) < 0 Then
 	MessageBox('Dados informados', 'Forma de pagamento inv$$HEX1$$e100$$ENDHEX$$lida.')
 End If
 
-ll_ret = inv_Funcoes.of_baixa_titulo( ref dw_contas_pagar,ref dw_contas_pagar_baixas,ref dw_contabil_movimento, ls_manda)
+ll_ret = inv_Funcoes.of_baixa_titulo( ref dw_contas_pagar,ref dw_contas_pagar_baixas,ref dw_contabil_movimento, Ref dw_contas_pagar_avulso, Ref ls_manda, ldt_Movimento)
 
 if ll_ret < 0 then
 	messagebox('Aviso','Grava$$HEX2$$e700e300$$ENDHEX$$o abortada.', StopSign!)

@@ -181,7 +181,9 @@ Do While (ll_Bytes > 0)
 					ll_Linha = ads_Arquivo.Find("chavenfe = '" + ls_ChaveNFE + "'", 1, ads_Arquivo.RowCount( ))
 					If ll_Linha > 0 Then
 						ads_Arquivo.SetItem(ll_Linha, "ValorArquivo2", Dec(ls_Colunas[ll_Coluna_ICMS]))
-						ads_Arquivo.SetItem(ll_Linha, "somou", 'T')
+						if ads_Arquivo.GetItemDecimal(ll_Linha, 'valoricms') > 0 then
+							ads_Arquivo.SetItem(ll_Linha, "somou", 'T')
+						end if
 						lde_ValorICMS += inv_Funcoes.of_null( ads_Arquivo.GetItemDecimal(ll_Linha, 'valoricms'), 0)
 					End If
 				End If
@@ -274,9 +276,14 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 
 	ll_Retrieve = lds_ContasPagar.Retrieve(ls_ChaveNFE, il_idClifor)
 	
-	lde_ValorArquivo = truncate(ads_Arquivo.GetItemDecimal(ll_For,'valoricms'),2)
-	lde_ValorArquivo1 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1'),2)
-	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
+//	lde_ValorArquivo = truncate(ads_Arquivo.GetItemDecimal(ll_For,'valoricms'),2)
+//	lde_ValorArquivo1 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1'),2)
+//	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
+	
+		
+	lde_ValorArquivo = ads_Arquivo.GetItemDecimal(ll_For,'valoricms')
+	lde_ValorArquivo1 = ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1')
+	lde_ValorArquivo2 = ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2')
 
 	If ll_Retrieve =  0 Then
 		If inv_Funcoes.of_Gerar_titulo_avulso( lds_ContasPagar, idw_contas_pagar_avulso , idw_contabil_avulso , il_idCliFor, il_idEmpresa, ls_ChaveNFE, lde_ValorArquivo, il_idUsuario, idt_Movimento ) > 0 Then
@@ -339,16 +346,19 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 	lds_ContasPagar.SetItem(1, 'ValorArquivo1', lde_ValorArquivo1)
 	lds_ContasPagar.SetItem(1, 'ValorArquivo2', lde_ValorArquivo2)
 	
+//	if trim(ls_ChaveNFE) = '50200688634977000705550040000184281192714645'  then
+//		debugbreak()
+//	end if
 	
-	If lds_ContasPagar.GetItemDecimal(1,'valorpagamento') >  lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo') then
-		if  ads_Arquivo.GetItemString(ll_For, 'somou') <> 'T' then
-			
-			lds_ContasPagar.SetItem(1, 'valjuros1', lds_ContasPagar.GetItemDecimal(1,'valorpagamento') - lde_ValorArquivo1)
-			lds_ContasPagar.SetItem(1, 'valjuros2', lds_ContasPagar.GetItemDecimal(1,'valorpagamento') - lde_ValorArquivo2)
-
-		else
-			lds_ContasPagar.SetItem(1, 'valjuros1', lds_ContasPagar.GetItemDecimal(1,'valorpagamento') - lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo'))
+	
+	If lde_ValorArquivo >  lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo') then
+		if lde_ValorArquivo1 = 0 then
+			lds_ContasPagar.SetItem(1, 'valjuros2', lde_ValorArquivo -  lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo'))
+		elseif lde_ValorArquivo2 = 0 or (lde_ValorArquivo1 > 0 and lde_ValorArquivo2 > 0 ) then
+				lds_ContasPagar.SetItem(1, 'valjuros1', lde_ValorArquivo - lds_ContasPagar.GetItemDecimal(1,'valliquidotitulo'))
 		end if
+	
+
 	else
 		lds_ContasPagar.SetItem(1, 'valjuros1', 0)
 		lds_ContasPagar.SetItem(1, 'valjuros2', 0)
