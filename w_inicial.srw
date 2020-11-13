@@ -128,6 +128,8 @@ lnv_Titulos = Create nv_Titulos
 
 of_Resetar_Tela( )
 
+dw_dtcaixa.AcceptText( )
+
 ll_idClifor = Long(em_idClifor.Text)
 ll_Forma = long(em_forma.Text)
 ll_idusuario = long(em_usuario.text)
@@ -177,8 +179,10 @@ dw_contas_pagar_baixas.SetTransObject(SQLCA)
 dw_contas_pagar_baixas.Reset()
 
 dw_contas_pagar_avulso.SetTransObject(SQLCA)
-dw_contas_pagar_baixas.Reset()
+dw_contas_pagar_avulso.Reset()
 
+dw_contabil_avulso.SetTransObject(SQLCA)
+dw_contas_pagar_avulso.Reset()
 end subroutine
 
 event open;of_Resetar_Tela( )
@@ -742,6 +746,8 @@ Date ldt_Movimento
 Decimal ld_valtaxa
 datawindow ldw_save[]
 s_parametros ls_manda
+
+dw_dtcaixa.AcceptText( )
 
 ll_forma = long(em_forma.Text)
 ll_idUsuario = long(em_Usuario.Text)
