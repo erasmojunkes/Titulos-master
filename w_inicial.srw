@@ -66,7 +66,7 @@ global type w_inicial from window
 integer width = 5138
 integer height = 2544
 boolean titlebar = true
-string title = "Baixa de t$$HEX1$$ed00$$ENDHEX$$tulos ICMS - Ver.: 2.0 (12/11/2020)"
+string title = "Baixa de t$$HEX1$$ed00$$ENDHEX$$tulos ICMS - Ver.: 2.0 (26/11/2020)"
 boolean controlmenu = true
 boolean minbox = true
 boolean resizable = true
@@ -155,6 +155,12 @@ If inv_Funcoes.of_null( ldt_Movimento, Date('01/01/1900')) = Date('01/01/1900') 
 	MessageBox('Dados do informados', 'Data do Caixa inv$$HEX1$$e100$$ENDHEX$$lida.')
 	Return 
 End If
+
+if ldt_Movimento = date(now()) then
+	if messagebox('Aviso','Deseja realmente gerar os titulos avulsos com a data: '+string(ldt_Movimento,'dd/mm/yyyy'), question!, yesno!,2) = 2 then
+		return
+	end if
+end if
 
 
 If lnv_Titulos.of_Importar(dw_contas_pagar, ll_idClifor, ll_Forma, ll_idUsuario, dw_contas_pagar_avulso, dw_contabil_avulso, ldt_Movimento) < 0 Then 
@@ -372,6 +378,7 @@ boolean focusrectangle = false
 end type
 
 type cbx_agrupar from checkbox within w_inicial
+boolean visible = false
 integer x = 562
 integer y = 2328
 integer width = 896

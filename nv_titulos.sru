@@ -276,10 +276,10 @@ For ll_For = 1 To ads_Arquivo.RowCount()
 
 	ll_Retrieve = lds_ContasPagar.Retrieve(ls_ChaveNFE, il_idClifor)
 	
-//	lde_ValorArquivo = truncate(ads_Arquivo.GetItemDecimal(ll_For,'valoricms'),2)
-//	lde_ValorArquivo1 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1'),2)
-//	lde_ValorArquivo2 = truncate(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
-	
+//	lde_ValorArquivo = round(ads_Arquivo.GetItemDecimal(ll_For,'valoricms'),2)
+//	lde_ValorArquivo1 = round(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1'),2)
+//	lde_ValorArquivo2 = round(ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo2'),2)
+//	
 		
 	lde_ValorArquivo = ads_Arquivo.GetItemDecimal(ll_For,'valoricms')
 	lde_ValorArquivo1 = ads_Arquivo.GetItemDecimal(ll_For,'ValorArquivo1')
