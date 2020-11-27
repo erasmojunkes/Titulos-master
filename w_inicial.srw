@@ -136,6 +136,11 @@ ll_idusuario = long(em_usuario.text)
 
 ldt_Movimento = date(dw_dtcaixa.GetItemDate(1, 'dtmovimento'))
 
+If inv_Funcoes.of_Get_entidade_mes( ) > 0 Then
+	MessageBox('Dados do Arquivo', 'O arquivo para o m$$HEX1$$ea00$$ENDHEX$$s atual j$$HEX2$$e1002000$$ENDHEX$$foi processado.')
+	Return 
+End If
+
 If inv_Funcoes.of_verifica_cliente(ll_idClifor) < 0 Then
 	MessageBox('Dados do Cliente', 'Cliente informado inv$$HEX1$$e100$$ENDHEX$$lido.')
 	Return 
@@ -794,6 +799,7 @@ else
 	If inv_Funcoes.of_update(ldw_save) < 0 Then
 		MessageBox('Erro','Problemas durante a grava$$HEX2$$e700e300$$ENDHEX$$o.', StopSign!)
 	Else
+		inv_Funcoes.of_set_entidade_mes( )
 		inv_Funcoes.of_salvar_importado(dw_contas_pagar)
 		of_Resetar_tela( )
 	End If

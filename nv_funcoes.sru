@@ -37,6 +37,8 @@ public function string of_obs_titulo (long al_idfornecedor, long al_idtitulo, st
 public function integer of_gerar_titulo_avulso (ref datastore ads_contas_pagar, ref datawindow adw_contas_pagar_avulso, ref datawindow adw_contabil_movimento, long al_idclifor, long al_idempresa, string as_chavenfe, decimal ade_valortitulo, integer al_idusuario, date adt_movimento)
 public function integer of_baixa_titulo (ref datawindow adw_contas_pagar, ref datawindow adw_contas_pagar_baixas, ref datawindow adw_contabil_movimento, ref datawindow adw_contas_baixar_avulso, s_parametros as_recebe, date adt_dtmovimento)
 public function integer of_baixa_titulo_bkp (ref datawindow adw_contas_pagar, ref datawindow adw_contas_pagar_baixas, ref datawindow adw_contabil_movimento, ref datawindow adw_contas_baixar_avulso, s_parametros as_recebe, date adt_dtmovimento)
+public subroutine of_set_entidade_mes ()
+public function long of_get_entidade_mes ()
 end prototypes
 
 public function integer of_verifica_cliente (long al_idclifor);Long ll_Count
@@ -1173,6 +1175,71 @@ end if
 */
 
 Return 1
+end function
+
+public subroutine of_set_entidade_mes ();Date ldt_Atual
+Long ll_Mes, ll_Ano, ls_ContadorData
+String ls_Dado
+ldt_Atual = Date(of_get_data_atual( ))
+
+ll_Mes = Month(ldt_Atual)
+ll_Ano = Year(ldt_Atual)
+
+ls_Dado = String(ll_Mes) + '-' + String(ll_Ano)
+
+SELECT 
+	MAX(chave2)
+INTO 
+	:ls_ContadorData
+FROM 
+	CONFIG_ENTIDADE
+WHERE
+	ENTIDADE = 'TIT'
+USING
+	SQLCA;
+	
+ls_ContadorData = of_null(ls_ContadorData,0)
+ls_ContadorData += 1
+
+INSERT INTO CONFIG_ENTIDADE 
+	(entidade, chave1, chave2, dados, observacao)
+VALUES
+	('TIT', 0, :ls_ContadorData, :ls_Dado, 'Data processamento de titulos')
+USING 
+	SQLCA;
+
+COMMIT USING SQLCA;
+	
+
+end subroutine
+
+public function long of_get_entidade_mes ();Date ldt_Atual
+Long ll_Mes, ll_Ano, ls_ContadorMes
+String ls_Dado
+ldt_Atual = Date(of_get_data_atual( ))
+
+ll_Mes = Month(ldt_Atual)
+ll_Ano = Year(ldt_Atual)
+
+ls_Dado = String(ll_Mes) + '-' + String(ll_Ano)
+
+SELECT 
+	1
+INTO 
+	:ls_ContadorMes
+FROM 
+	CONFIG_ENTIDADE
+WHERE
+	DADOS = :ls_Dado
+USING
+	SQLCA;
+
+If ls_ContadorMes > 0 Then
+	Return 1
+Else
+	Return -1
+End if
+
 end function
 
 on nv_funcoes.create
